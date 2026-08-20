@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>NEW PLANET</title>
 
   <style>
@@ -15,9 +15,7 @@
       --line:#2a2a30;
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{box-sizing:border-box}
 
     body{
       margin:0;
@@ -30,6 +28,21 @@
       max-width:620px;
       margin:auto;
       padding:24px 16px 48px;
+    }
+
+    .language-wrap{
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:10px;
+    }
+
+    select{
+      background:#17171b;
+      color:#ddd;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:14px;
     }
 
     .brand{
@@ -144,12 +157,15 @@
     .primary{
       background:var(--accent);
       color:#17120a;
-      margin-top:4px;
     }
 
     .secondary{
       background:#28282e;
       color:#fff;
+    }
+
+    button:disabled{
+      opacity:.6;
     }
 
     .hidden{
@@ -196,6 +212,16 @@
 
 <div class="wrap">
 
+  <div class="language-wrap">
+    <select id="languageSelect">
+      <option value="ja">日本語</option>
+      <option value="en">English</option>
+      <option value="ko">한국어</option>
+      <option value="zh-CN">简体中文</option>
+      <option value="zh-TW">繁體中文</option>
+    </select>
+  </div>
+
   <div class="brand">
     <img src="/assets/new-planet-logo.jpeg" alt="NEW PLANET">
     <h1>NEW PLANET</h1>
@@ -229,7 +255,6 @@
 
   <div class="card">
     <div class="q" id="q3"></div>
-
     <textarea id="comment"></textarea>
   </div>
 
@@ -244,11 +269,9 @@
   </div>
 
   <button class="primary" id="generateBtn"></button>
-
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
-
     <div class="q" id="resultTitle"></div>
 
     <div id="result" class="result"></div>
@@ -267,7 +290,6 @@
     ></a>
 
     <p class="note" id="note"></p>
-
   </div>
 
 </div>
@@ -275,72 +297,80 @@
 <script>
 
 const CONFIG = {
-  storeName: "NEW PLANET",
-
-  // 後でNEW PLANETの実際のGoogle口コミURLに変更
   googleReviewUrl:
     "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
 };
 
 
-// -------------------------
+// ---------------------
 // 言語判定
-// -------------------------
+// ---------------------
 
-function detectLanguage(){
+function detectLanguage() {
 
-  const raw =
-    (navigator.languages && navigator.languages[0]) ||
-    navigator.language ||
-    "en";
+  const languages =
+    navigator.languages?.length
+      ? navigator.languages
+      : [navigator.language || "en"];
 
-  const lang = raw.toLowerCase();
+  for (const item of languages) {
 
-  if(lang.startsWith("ja")) return "ja";
+    const lang =
+      String(item).toLowerCase();
 
-  if(lang.startsWith("ko")) return "ko";
+    if (lang.startsWith("ja")) {
+      return "ja";
+    }
 
-  if(
-    lang === "zh-tw" ||
-    lang === "zh-hk" ||
-    lang.includes("hant")
-  ){
-    return "zh-TW";
-  }
+    if (lang.startsWith("ko")) {
+      return "ko";
+    }
 
-  if(lang.startsWith("zh")){
-    return "zh-CN";
+    if (
+      lang.startsWith("zh-tw") ||
+      lang.startsWith("zh-hk") ||
+      lang.includes("hant")
+    ) {
+      return "zh-TW";
+    }
+
+    if (lang.startsWith("zh")) {
+      return "zh-CN";
+    }
+
+    if (lang.startsWith("en")) {
+      return "en";
+    }
   }
 
   return "en";
 }
 
 
-const language = detectLanguage();
+// 手動で選んだ言語があれば優先。
+// 初回は端末/ブラウザの優先言語を使用。
+let language =
+  localStorage.getItem("newPlanetLanguage") ||
+  detectLanguage();
 
-document.documentElement.lang = language;
 
-
-// -------------------------
+// ---------------------
 // 翻訳
-// -------------------------
+// ---------------------
 
 const TEXT = {
 
-  ja:{
+  ja: {
     subtitle:
       "30秒アンケートに答えるだけ。回答内容からAIが口コミ文を作成します。",
 
     q1:"1. 今日の満足度は？",
-
     q2:"2. 良かったところを選んでください",
-
     q3:"3. 特に印象に残ったことは？",
+    q4:"4. また来たいと思いますか？",
 
     placeholder:
       "例：スタッフが親切だった、DJが良かった、友達と楽しめた など",
-
-    q4:"4. また来たいと思いますか？",
 
     good:{
       staff:"スタッフ",
@@ -358,19 +388,12 @@ const TEXT = {
     },
 
     generate:"AIで口コミを作る",
-
     generating:"口コミ文を作成しています…",
-
     selectRating:"満足度を選んでください。",
-
     resultTitle:"AIが作った口コミ",
-
     copy:"コピー",
-
     copied:"コピーしました",
-
     regenerate:"作り直す",
-
     review:"Google口コミを書く",
 
     note:
@@ -380,20 +403,17 @@ const TEXT = {
   },
 
 
-  en:{
+  en: {
     subtitle:
       "Answer a quick 30-second survey and AI will turn your answers into a natural review.",
 
     q1:"1. How satisfied were you today?",
-
     q2:"2. What did you like?",
-
     q3:"3. What stood out to you?",
+    q4:"4. Would you like to visit again?",
 
     placeholder:
       "Example: Friendly staff, great DJ, had fun with friends, etc.",
-
-    q4:"4. Would you like to visit again?",
 
     good:{
       staff:"Staff",
@@ -411,19 +431,12 @@ const TEXT = {
     },
 
     generate:"Create my review with AI",
-
     generating:"Creating your review…",
-
     selectRating:"Please select a satisfaction rating.",
-
     resultTitle:"Your AI-generated review",
-
     copy:"Copy",
-
     copied:"Copied",
-
     regenerate:"Try another",
-
     review:"Write a Google Review",
 
     note:
@@ -433,20 +446,17 @@ const TEXT = {
   },
 
 
-  ko:{
+  ko: {
     subtitle:
       "30초 설문에 답하면 AI가 답변을 바탕으로 자연스러운 리뷰를 만들어 드립니다.",
 
     q1:"1. 오늘 만족도는 어땠나요?",
-
     q2:"2. 좋았던 점을 선택해 주세요",
-
     q3:"3. 가장 기억에 남은 점은 무엇인가요?",
+    q4:"4. 다시 방문하고 싶으신가요?",
 
     placeholder:
       "예: 직원이 친절했다, DJ가 좋았다, 친구들과 즐거웠다 등",
-
-    q4:"4. 다시 방문하고 싶으신가요?",
 
     good:{
       staff:"직원",
@@ -464,19 +474,12 @@ const TEXT = {
     },
 
     generate:"AI로 리뷰 만들기",
-
     generating:"리뷰를 작성하고 있습니다…",
-
     selectRating:"만족도를 선택해 주세요.",
-
     resultTitle:"AI가 만든 리뷰",
-
     copy:"복사",
-
     copied:"복사했습니다",
-
     regenerate:"다시 만들기",
-
     review:"Google 리뷰 작성",
 
     note:
@@ -486,20 +489,17 @@ const TEXT = {
   },
 
 
-  "zh-CN":{
+  "zh-CN": {
     subtitle:
       "只需回答一个30秒的小问卷，AI就会根据您的回答生成自然的评价。",
 
     q1:"1. 您今天的满意度如何？",
-
     q2:"2. 请选择您觉得好的方面",
-
     q3:"3. 有什么让您印象特别深刻？",
+    q4:"4. 您还想再来吗？",
 
     placeholder:
       "例如：员工很友善、DJ很好、和朋友玩得很开心等",
-
-    q4:"4. 您还想再来吗？",
 
     good:{
       staff:"员工",
@@ -517,19 +517,12 @@ const TEXT = {
     },
 
     generate:"用AI生成评价",
-
     generating:"正在生成评价…",
-
     selectRating:"请选择满意度。",
-
     resultTitle:"AI生成的评价",
-
     copy:"复制",
-
     copied:"已复制",
-
     regenerate:"重新生成",
-
     review:"撰写Google评价",
 
     note:
@@ -539,20 +532,17 @@ const TEXT = {
   },
 
 
-  "zh-TW":{
+  "zh-TW": {
     subtitle:
       "只要回答30秒問卷，AI就會根據您的回答產生自然的評論。",
 
     q1:"1. 今天的滿意度如何？",
-
     q2:"2. 請選擇您覺得不錯的地方",
-
     q3:"3. 有什麼讓您特別印象深刻？",
+    q4:"4. 您還想再來嗎？",
 
     placeholder:
       "例如：工作人員很親切、DJ很好、和朋友玩得很開心等",
-
-    q4:"4. 您還想再來嗎？",
 
     good:{
       staff:"工作人員",
@@ -570,19 +560,12 @@ const TEXT = {
     },
 
     generate:"用AI產生評論",
-
     generating:"正在產生評論…",
-
     selectRating:"請選擇滿意度。",
-
     resultTitle:"AI產生的評論",
-
     copy:"複製",
-
     copied:"已複製",
-
     regenerate:"重新產生",
-
     review:"撰寫Google評論",
 
     note:
@@ -590,104 +573,129 @@ const TEXT = {
 
     error:"錯誤："
   }
-
 };
 
 
-const t = TEXT[language] || TEXT.en;
+// ---------------------
+// 表示更新
+// ---------------------
+
+function applyLanguage() {
+
+  const t =
+    TEXT[language] || TEXT.en;
+
+  document.documentElement.lang =
+    language;
+
+  document.getElementById("languageSelect").value =
+    language;
+
+  document.getElementById("subtitle").textContent =
+    t.subtitle;
+
+  document.getElementById("q1").textContent =
+    t.q1;
+
+  document.getElementById("q2").textContent =
+    t.q2;
+
+  document.getElementById("q3").textContent =
+    t.q3;
+
+  document.getElementById("q4").textContent =
+    t.q4;
+
+  document.getElementById("comment").placeholder =
+    t.placeholder;
+
+  document.getElementById("generateBtn").textContent =
+    t.generate;
+
+  document.getElementById("resultTitle").textContent =
+    t.resultTitle;
+
+  document.getElementById("copyBtn").textContent =
+    t.copy;
+
+  document.getElementById("regenerateBtn").textContent =
+    t.regenerate;
+
+  document.getElementById("reviewLink").textContent =
+    t.review;
+
+  document.getElementById("note").textContent =
+    t.note;
 
 
-// -------------------------
-// 画面に言語反映
-// -------------------------
+  document
+    .querySelectorAll("#goodPoints .chip")
+    .forEach(btn => {
 
-document.getElementById("subtitle").textContent =
-  t.subtitle;
+      btn.textContent =
+        t.good[btn.dataset.key];
 
-document.getElementById("q1").textContent =
-  t.q1;
+    });
 
-document.getElementById("q2").textContent =
-  t.q2;
 
-document.getElementById("q3").textContent =
-  t.q3;
+  document
+    .querySelectorAll("#returnIntent .chip")
+    .forEach(btn => {
 
-document.getElementById("q4").textContent =
-  t.q4;
+      btn.textContent =
+        t.returns[btn.dataset.key];
 
-document.getElementById("comment").placeholder =
-  t.placeholder;
+    });
+}
 
-document.getElementById("generateBtn").textContent =
-  t.generate;
 
-document.getElementById("resultTitle").textContent =
-  t.resultTitle;
+document.getElementById("languageSelect")
+  .addEventListener("change", e => {
 
-document.getElementById("copyBtn").textContent =
-  t.copy;
+    language =
+      e.target.value;
 
-document.getElementById("regenerateBtn").textContent =
-  t.regenerate;
+    localStorage.setItem(
+      "newPlanetLanguage",
+      language
+    );
 
-document.getElementById("reviewLink").textContent =
-  t.review;
+    applyLanguage();
+
+    document
+      .getElementById("resultCard")
+      .classList
+      .add("hidden");
+
+    document.getElementById("status").textContent =
+      "";
+  });
+
 
 document.getElementById("reviewLink").href =
   CONFIG.googleReviewUrl;
 
-document.getElementById("note").textContent =
-  t.note;
 
-
-document
-  .querySelectorAll("#goodPoints .chip")
-  .forEach(btn=>{
-
-    const key =
-      btn.dataset.key;
-
-    btn.textContent =
-      t.good[key];
-
-  });
-
-
-document
-  .querySelectorAll("#returnIntent .chip")
-  .forEach(btn=>{
-
-    const key =
-      btn.dataset.key;
-
-    btn.textContent =
-      t.returns[key];
-
-  });
-
-
-// -------------------------
-// アンケート処理
-// -------------------------
+// ---------------------
+// 回答
+// ---------------------
 
 let rating = 0;
-
 let selectedReturn = "";
 
 
 document
   .querySelectorAll("#stars .star")
-  .forEach(btn=>{
+  .forEach(btn => {
 
-    btn.onclick = ()=>{
+    btn.onclick = () => {
 
       rating =
         Number(btn.dataset.v);
 
       document
         .querySelectorAll("#stars .star")
-        .forEach((b,i)=>{
+        .forEach((b,i) => {
 
           b.classList.toggle(
             "active",
@@ -703,26 +711,26 @@ document
 
 document
   .querySelectorAll("#goodPoints .chip")
-  .forEach(btn=>{
+  .forEach(btn => {
 
     btn.onclick =
-      ()=>btn.classList.toggle("active");
+      () => btn.classList.toggle("active");
 
   });
 
 
 document
   .querySelectorAll("#returnIntent .chip")
-  .forEach(btn=>{
+  .forEach(btn => {
 
-    btn.onclick = ()=>{
+    btn.onclick = () => {
 
       selectedReturn =
         btn.dataset.key;
 
       document
         .querySelectorAll("#returnIntent .chip")
-        .forEach(b=>{
+        .forEach(b => {
 
           b.classList.toggle(
             "active",
@@ -736,11 +744,14 @@ document
   });
 
 
-// -------------------------
-// AI口コミ生成
-// -------------------------
+// ---------------------
+// AI生成
+// ---------------------
 
-async function generateReview(){
+async function generateReview() {
+
+  const t =
+    TEXT[language] || TEXT.en;
 
   const status =
     document.getElementById("status");
@@ -753,7 +764,7 @@ async function generateReview(){
       ...document.querySelectorAll(
         "#goodPoints .chip.active"
       )
-    ].map(x=>x.dataset.key);
+    ].map(x => x.dataset.key);
 
   const comment =
     document
@@ -762,7 +773,7 @@ async function generateReview(){
       .trim();
 
 
-  if(!rating){
+  if (!rating) {
 
     status.textContent =
       t.selectRating;
@@ -777,42 +788,34 @@ async function generateReview(){
     t.generating;
 
 
-  try{
+  try {
 
-    const res =
+    const response =
       await fetch(
         "/api/generate",
         {
           method:"POST",
 
           headers:{
-            "Content-Type":
-              "application/json"
+            "Content-Type":"application/json"
           },
 
           body:JSON.stringify({
-
             rating,
-
             goodPoints,
-
             comment,
-
-            returnIntent:
-              selectedReturn,
-
+            returnIntent:selectedReturn,
             language
-
           })
         }
       );
 
 
     const data =
-      await res.json();
+      await response.json();
 
 
-    if(!res.ok){
+    if (!response.ok) {
 
       throw new Error(
         data.error ||
@@ -822,9 +825,7 @@ async function generateReview(){
     }
 
 
-    document
-      .getElementById("result")
-      .textContent =
+    document.getElementById("result").textContent =
       data.review;
 
 
@@ -840,16 +841,18 @@ async function generateReview(){
     document
       .getElementById("resultCard")
       .scrollIntoView({
-        behavior:"smooth"
+        behavior:"smooth",
+        block:"start"
       });
 
 
-  }catch(e){
+  } catch(error) {
 
     status.textContent =
-      t.error + e.message;
+      t.error +
+      (error.message || "Unknown error");
 
-  }finally{
+  } finally {
 
     btn.disabled = false;
 
@@ -858,76 +861,66 @@ async function generateReview(){
 }
 
 
-document
-  .getElementById("generateBtn")
-  .onclick =
+document.getElementById("generateBtn").onclick =
+  generateReview;
+
+document.getElementById("regenerateBtn").onclick =
   generateReview;
 
 
-document
-  .getElementById("regenerateBtn")
-  .onclick =
-  generateReview;
-
-
-// -------------------------
+// ---------------------
 // コピー
-// -------------------------
+// ---------------------
 
-document
-  .getElementById("copyBtn")
-  .onclick =
-  async()=>{
+document.getElementById("copyBtn").onclick =
+  async () => {
+
+    const t =
+      TEXT[language] || TEXT.en;
 
     const text =
       document
         .getElementById("result")
         .textContent;
 
-    try{
 
-      await navigator
-        .clipboard
-        .writeText(text);
+    try {
 
-      document
-        .getElementById("copyBtn")
-        .textContent =
-        t.copied;
+      await navigator.clipboard.writeText(text);
 
-      setTimeout(()=>{
-
-        document
-          .getElementById("copyBtn")
-          .textContent =
-          t.copy;
-
-      },1500);
-
-    }catch(e){
+    } catch {
 
       const area =
-        document.createElement(
-          "textarea"
-        );
+        document.createElement("textarea");
 
-      area.value = text;
+      area.value =
+        text;
 
-      document.body.appendChild(
-        area
-      );
+      document.body.appendChild(area);
 
       area.select();
 
-      document.execCommand(
-        "copy"
-      );
+      document.execCommand("copy");
 
       area.remove();
-
     }
 
+
+    document.getElementById("copyBtn").textContent =
+      t.copied;
+
+
+    setTimeout(() => {
+
+      document.getElementById("copyBtn").textContent =
+        t.copy;
+
+    },1500);
+
   };
+
+
+applyLanguage();
 
 </script>
 
