@@ -202,6 +202,59 @@
       color:var(--muted);
       margin-top:10px;
     }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+
+    .overlay.hidden{
+      display:none;
+    }
+
+    .overlay-box{
+      width:min(520px,100%);
+      background:#17171b;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+    }
+
+    .overlay-box h2{
+      margin:0 0 14px;
+      font-size:24px;
+    }
+
+    .overlay-box p{
+      color:#ddd;
+      line-height:1.8;
+      margin:0 0 16px;
+    }
+
+    .steps{
+      text-align:left;
+      background:#101014;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      line-height:1.9;
+      margin:16px 0;
+      font-size:16px;
+    }
+
+    .overlay-status{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:10px;
+    }
   </style>
 </head>
 
@@ -227,7 +280,6 @@
 
   <div class="card">
     <div class="q" id="q1"></div>
-
     <div class="stars" id="stars">
       <button class="star" data-v="1">★</button>
       <button class="star" data-v="2">★</button>
@@ -266,7 +318,6 @@
   </div>
 
   <button class="primary" id="generateBtn"></button>
-
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
@@ -287,9 +338,20 @@
     ></button>
 
     <p class="note" id="note"></p>
-
   </div>
 
+</div>
+
+<div id="overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <h2 id="overlayTitle"></h2>
+
+    <p id="overlayLead"></p>
+
+    <div class="steps" id="overlaySteps"></div>
+
+    <div class="overlay-status" id="overlayStatus"></div>
+  </div>
 </div>
 
 <script>
@@ -298,11 +360,6 @@ const CONFIG = {
   googleReviewUrl:
     "https://search.google.com/local/writereview?placeid=ChIJq6qeN52LGGARkXG2K9Et6iM"
 };
-
-
-// ---------------------
-// 言語判定
-// ---------------------
 
 function detectLanguage() {
 
@@ -316,44 +373,25 @@ function detectLanguage() {
     const lang =
       String(item).toLowerCase();
 
-    if (lang.startsWith("ja")) {
-      return "ja";
-    }
-
-    if (lang.startsWith("ko")) {
-      return "ko";
-    }
+    if (lang.startsWith("ja")) return "ja";
+    if (lang.startsWith("ko")) return "ko";
 
     if (
       lang.startsWith("zh-tw") ||
       lang.startsWith("zh-hk") ||
       lang.includes("hant")
-    ) {
-      return "zh-TW";
-    }
+    ) return "zh-TW";
 
-    if (lang.startsWith("zh")) {
-      return "zh-CN";
-    }
-
-    if (lang.startsWith("en")) {
-      return "en";
-    }
+    if (lang.startsWith("zh")) return "zh-CN";
+    if (lang.startsWith("en")) return "en";
   }
 
   return "en";
 }
 
-
-// 手動で選んだ言語があれば優先
 let language =
   localStorage.getItem("newPlanetLanguage") ||
   detectLanguage();
-
-
-// ---------------------
-// 翻訳
-// ---------------------
 
 const TEXT = {
 
@@ -388,23 +426,23 @@ const TEXT = {
     generating:"口コミ文を作成しています…",
     selectRating:"満足度を選んでください。",
     resultTitle:"AIが作った口コミ",
-
     copy:"コピー",
     copied:"コピーしました",
-
     regenerate:"作り直す",
 
-    review:"コピーしてGoogle口コミを書く",
-
-    copiedAndOpening:
-      "口コミをコピーしました。Googleの入力欄で「貼り付け」してください。",
+    review:"Google口コミを書く",
 
     note:
       "ボタンを押すと口コミ文をコピーしてGoogleの投稿画面を開きます。内容がご自身の体験と一致していることを確認してから投稿してください。",
 
-    error:"エラー："
-  },
+    error:"エラー：",
 
+    overlayTitle:"口コミをコピーしました",
+    overlayLead:"次のGoogle画面で、以下の3ステップだけです。",
+    overlaySteps:
+      "① 星を選ぶ<br>② 口コミ欄を長押しして「貼り付け」<br>③ 「投稿」を押す",
+    overlayStatus:"Google口コミ画面を開いています…"
+  },
 
   en:{
     subtitle:
@@ -437,23 +475,23 @@ const TEXT = {
     generating:"Creating your review…",
     selectRating:"Please select a satisfaction rating.",
     resultTitle:"Your AI-generated review",
-
     copy:"Copy",
     copied:"Copied",
-
     regenerate:"Try another",
 
-    review:"Copy & open Google Review",
-
-    copiedAndOpening:
-      "Review copied. Paste it into the Google review box.",
+    review:"Write a Google Review",
 
     note:
-      "This button copies your review and opens Google's review page. Please check that the text accurately reflects your experience before posting.",
+      "This button copies your review and opens Google's review page. Please check that the review accurately reflects your experience before posting.",
 
-    error:"Error: "
+    error:"Error: ",
+
+    overlayTitle:"Review copied",
+    overlayLead:"On the next Google screen, just do these 3 steps.",
+    overlaySteps:
+      "1. Choose your star rating<br>2. Paste the review into the text box<br>3. Tap Post",
+    overlayStatus:"Opening Google Reviews…"
   },
-
 
   ko:{
     subtitle:
@@ -486,23 +524,23 @@ const TEXT = {
     generating:"리뷰를 작성하고 있습니다…",
     selectRating:"만족도를 선택해 주세요.",
     resultTitle:"AI가 만든 리뷰",
-
     copy:"복사",
     copied:"복사했습니다",
-
     regenerate:"다시 만들기",
 
-    review:"복사 후 Google 리뷰 작성",
-
-    copiedAndOpening:
-      "리뷰가 복사되었습니다. Google 입력란에 붙여넣어 주세요.",
+    review:"Google 리뷰 작성",
 
     note:
       "버튼을 누르면 리뷰가 복사되고 Google 리뷰 작성 화면이 열립니다. 실제 경험과 일치하는지 확인한 후 게시해 주세요.",
 
-    error:"오류: "
-  },
+    error:"오류: ",
 
+    overlayTitle:"리뷰가 복사되었습니다",
+    overlayLead:"다음 Google 화면에서 3단계만 하면 됩니다.",
+    overlaySteps:
+      "① 별점 선택<br>② 리뷰 입력란에 붙여넣기<br>③ 게시 버튼 누르기",
+    overlayStatus:"Google 리뷰 화면을 여는 중…"
+  },
 
   "zh-CN":{
     subtitle:
@@ -535,23 +573,23 @@ const TEXT = {
     generating:"正在生成评价…",
     selectRating:"请选择满意度。",
     resultTitle:"AI生成的评价",
-
     copy:"复制",
     copied:"已复制",
-
     regenerate:"重新生成",
 
-    review:"复制并打开Google评价",
-
-    copiedAndOpening:
-      "评价已复制。请粘贴到Google评价输入框中。",
+    review:"撰写Google评价",
 
     note:
       "点击按钮后会复制评价并打开Google评价页面。发布前请确认内容与您的真实体验一致。",
 
-    error:"错误："
-  },
+    error:"错误：",
 
+    overlayTitle:"评价已复制",
+    overlayLead:"进入Google页面后，只需3步。",
+    overlaySteps:
+      "① 选择星级<br>② 将评价粘贴到输入框<br>③ 点击发布",
+    overlayStatus:"正在打开Google评价页面…"
+  },
 
   "zh-TW":{
     subtitle:
@@ -584,29 +622,24 @@ const TEXT = {
     generating:"正在產生評論…",
     selectRating:"請選擇滿意度。",
     resultTitle:"AI產生的評論",
-
     copy:"複製",
     copied:"已複製",
-
     regenerate:"重新產生",
 
-    review:"複製並開啟Google評論",
-
-    copiedAndOpening:
-      "評論已複製。請貼到Google評論輸入欄中。",
+    review:"撰寫Google評論",
 
     note:
       "按下按鈕後會複製評論並開啟Google評論頁面。發布前請確認內容與您的實際體驗一致。",
 
-    error:"錯誤："
+    error:"錯誤：",
+
+    overlayTitle:"評論已複製",
+    overlayLead:"進入Google頁面後，只要3個步驟。",
+    overlaySteps:
+      "① 選擇星等<br>② 將評論貼到輸入欄<br>③ 按下發布",
+    overlayStatus:"正在開啟Google評論頁面…"
   }
-
 };
-
-
-// ---------------------
-// 表示更新
-// ---------------------
 
 function applyLanguage() {
 
@@ -655,27 +688,32 @@ function applyLanguage() {
   document.getElementById("note").textContent =
     t.note;
 
+  document.getElementById("overlayTitle").textContent =
+    t.overlayTitle;
+
+  document.getElementById("overlayLead").textContent =
+    t.overlayLead;
+
+  document.getElementById("overlaySteps").innerHTML =
+    t.overlaySteps;
+
+  document.getElementById("overlayStatus").textContent =
+    t.overlayStatus;
 
   document
     .querySelectorAll("#goodPoints .chip")
     .forEach(btn => {
-
       btn.textContent =
         t.good[btn.dataset.key];
-
     });
-
 
   document
     .querySelectorAll("#returnIntent .chip")
     .forEach(btn => {
-
       btn.textContent =
         t.returns[btn.dataset.key];
-
     });
 }
-
 
 document.getElementById("languageSelect")
   .addEventListener("change", e => {
@@ -699,14 +737,8 @@ document.getElementById("languageSelect")
       "";
   });
 
-
-// ---------------------
-// 回答
-// ---------------------
-
 let rating = 0;
 let selectedReturn = "";
-
 
 document
   .querySelectorAll("#stars .star")
@@ -720,28 +752,20 @@ document
       document
         .querySelectorAll("#stars .star")
         .forEach((b,i) => {
-
           b.classList.toggle(
             "active",
             i < rating
           );
-
         });
-
     };
-
   });
-
 
 document
   .querySelectorAll("#goodPoints .chip")
   .forEach(btn => {
-
     btn.onclick =
       () => btn.classList.toggle("active");
-
   });
-
 
 document
   .querySelectorAll("#returnIntent .chip")
@@ -755,22 +779,13 @@ document
       document
         .querySelectorAll("#returnIntent .chip")
         .forEach(b => {
-
           b.classList.toggle(
             "active",
             b === btn
           );
-
         });
-
     };
-
   });
-
-
-// ---------------------
-// AI口コミ生成
-// ---------------------
 
 async function generateReview() {
 
@@ -796,21 +811,15 @@ async function generateReview() {
       .value
       .trim();
 
-
   if (!rating) {
-
     status.textContent =
       t.selectRating;
-
     return;
   }
 
-
   btn.disabled = true;
-
   status.textContent =
     t.generating;
-
 
   try {
 
@@ -835,35 +844,27 @@ async function generateReview() {
         }
       );
 
-
     const data =
       await response.json();
 
-
     if (!response.ok) {
-
       throw new Error(
         data.error ||
         "Generation failed"
       );
-
     }
-
 
     document
       .getElementById("result")
       .textContent =
       data.review;
 
-
     document
       .getElementById("resultCard")
       .classList
       .remove("hidden");
 
-
     status.textContent = "";
-
 
     document
       .getElementById("resultCard")
@@ -871,7 +872,6 @@ async function generateReview() {
         behavior:"smooth",
         block:"start"
       });
-
 
   } catch(error) {
 
@@ -882,27 +882,18 @@ async function generateReview() {
   } finally {
 
     btn.disabled = false;
-
   }
-
 }
-
 
 document
   .getElementById("generateBtn")
   .onclick =
   generateReview;
 
-
 document
   .getElementById("regenerateBtn")
   .onclick =
   generateReview;
-
-
-// ---------------------
-// 共通コピー関数
-// ---------------------
 
 async function copyReviewText() {
 
@@ -915,7 +906,6 @@ async function copyReviewText() {
   if (!text) {
     return false;
   }
-
 
   try {
 
@@ -962,17 +952,9 @@ async function copyReviewText() {
     } catch {
 
       return false;
-
     }
-
   }
-
 }
-
-
-// ---------------------
-// 通常のコピーボタン
-// ---------------------
 
 document
   .getElementById("copyBtn")
@@ -985,14 +967,12 @@ document
     const success =
       await copyReviewText();
 
-
     if (success) {
 
       document
         .getElementById("copyBtn")
         .textContent =
         t.copied;
-
 
       setTimeout(() => {
 
@@ -1002,50 +982,31 @@ document
           t.copy;
 
       },1500);
-
     }
-
   };
-
-
-// ---------------------
-// コピー → Google口コミ画面
-// ---------------------
 
 document
   .getElementById("reviewBtn")
   .onclick =
   async () => {
 
-    const t =
-      TEXT[language] || TEXT.en;
-
-    const status =
-      document.getElementById("status");
-
+    const overlay =
+      document.getElementById("overlay");
 
     const success =
       await copyReviewText();
 
+    overlay
+      .classList
+      .remove("hidden");
 
-    if (success) {
-
-      status.textContent =
-        t.copiedAndOpening;
-
-    }
-
-
-    // 少しだけ表示してからGoogleへ移動
     setTimeout(() => {
 
       window.location.href =
         CONFIG.googleReviewUrl;
 
-    },350);
-
+    },1800);
   };
-
 
 applyLanguage();
 
