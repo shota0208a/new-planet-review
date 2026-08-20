@@ -28,11 +28,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // ========================================
-    // 言語設定
-    // ========================================
-
-    const supportedLanguages = [
+    const supported = [
       "ja",
       "en",
       "ko",
@@ -41,26 +37,18 @@ export default async function handler(req, res) {
     ];
 
     let language =
-      supportedLanguages.includes(requestedLanguage)
+      supported.includes(requestedLanguage)
         ? requestedLanguage
         : null;
 
-    // フロントから言語が送られなかった場合
-    // ブラウザの言語から判定
     if (!language) {
       const acceptLanguage = String(
         req.headers["accept-language"] || ""
       ).toLowerCase();
 
-      if (
-        acceptLanguage.startsWith("ja") ||
-        acceptLanguage.includes(",ja")
-      ) {
+      if (acceptLanguage.includes("ja")) {
         language = "ja";
-      } else if (
-        acceptLanguage.startsWith("ko") ||
-        acceptLanguage.includes(",ko")
-      ) {
+      } else if (acceptLanguage.includes("ko")) {
         language = "ko";
       } else if (
         acceptLanguage.includes("zh-tw") ||
@@ -78,8 +66,6 @@ export default async function handler(req, res) {
     const LANG = {
       ja: {
         name: "Japanese",
-        instruction: "自然な日本語",
-
         points: {
           staff: "スタッフ",
           atmosphere: "雰囲気",
@@ -88,23 +74,17 @@ export default async function handler(req, res) {
           comfort: "居心地",
           access: "アクセス"
         },
-
         returns: {
           definitely: "ぜひまた来たい",
           again: "また来たい",
           maybe: "機会があればまた来たい"
         },
-
-        noAnswer: "未回答",
-
-        length:
-          "日本語で80〜160文字程度。2〜4文程度。"
+        none: "未回答",
+        length: "80〜160文字程度、2〜4文"
       },
 
       en: {
         name: "English",
-        instruction: "natural English",
-
         points: {
           staff: "staff",
           atmosphere: "atmosphere",
@@ -113,23 +93,17 @@ export default async function handler(req, res) {
           comfort: "comfort",
           access: "location/accessibility"
         },
-
         returns: {
           definitely: "definitely want to visit again",
           again: "would like to visit again",
           maybe: "might visit again if I get the chance"
         },
-
-        noAnswer: "No answer",
-
-        length:
-          "Write approximately 35 to 70 words in 2 to 4 complete sentences."
+        none: "No answer",
+        length: "35 to 70 words, 2 to 4 sentences"
       },
 
       ko: {
         name: "Korean",
-        instruction: "자연스러운 한국어",
-
         points: {
           staff: "직원",
           atmosphere: "분위기",
@@ -138,23 +112,17 @@ export default async function handler(req, res) {
           comfort: "편안함",
           access: "접근성"
         },
-
         returns: {
           definitely: "꼭 다시 방문하고 싶음",
           again: "다시 방문하고 싶음",
           maybe: "기회가 된다면 다시 방문하고 싶음"
         },
-
-        noAnswer: "미응답",
-
-        length:
-          "약 80~160자, 2~4개의 완전한 문장으로 작성하세요."
+        none: "미응답",
+        length: "약 80~160자, 2~4문장"
       },
 
       "zh-CN": {
         name: "Simplified Chinese",
-        instruction: "自然的简体中文",
-
         points: {
           staff: "员工",
           atmosphere: "氛围",
@@ -163,23 +131,17 @@ export default async function handler(req, res) {
           comfort: "舒适度",
           access: "交通便利"
         },
-
         returns: {
           definitely: "非常想再次光顾",
           again: "还想再次光顾",
           maybe: "有机会的话还会再来"
         },
-
-        noAnswer: "未回答",
-
-        length:
-          "约80至160个汉字，使用2至4个完整句子。"
+        none: "未回答",
+        length: "约80至160个汉字，2至4句话"
       },
 
       "zh-TW": {
         name: "Traditional Chinese",
-        instruction: "自然的繁體中文",
-
         points: {
           staff: "工作人員",
           atmosphere: "氣氛",
@@ -188,301 +150,152 @@ export default async function handler(req, res) {
           comfort: "舒適度",
           access: "交通便利"
         },
-
         returns: {
           definitely: "非常想再次造訪",
           again: "還想再次造訪",
           maybe: "有機會的話會再來"
         },
-
-        noAnswer: "未回答",
-
-        length:
-          "約80至160個字，使用2至4個完整句子。"
+        none: "未回答",
+        length: "約80至160個字，2至4句話"
       }
     };
 
     const lang = LANG[language];
-
-    // ========================================
-    // 回答内容を変換
-    // ========================================
 
     const selectedPoints = goodPoints
       .map(key => lang.points[key])
       .filter(Boolean);
 
     const returnText =
-      lang.returns[returnIntent] || lang.noAnswer;
-
-    // ========================================
-    // AIへの指示
-    // ========================================
+      lang.returns[returnIntent] || lang.none;
 
     const prompt = `
-You are writing a Google review on behalf of a real customer,
-using ONLY information that the customer personally provided.
+Create exactly one natural Google review in ${lang.name}.
 
-OUTPUT LANGUAGE:
-${lang.name}
+Use ONLY the customer's answers below.
 
-Write the review entirely in ${lang.instruction}.
+Customer answers:
+Satisfaction: ${rating}/5
 
-CUSTOMER ANSWERS:
-
-Satisfaction:
-${rating}/5
-
-Things the customer liked:
+Positive points:
 ${
   selectedPoints.length
     ? selectedPoints.join(", ")
-    : lang.noAnswer
+    : lang.none
 }
 
-Customer's own comment:
-${comment || lang.noAnswer}
+Free comment:
+${comment || lang.none}
 
 Return intention:
 ${returnText}
 
-
-STRICT RULES:
-
-1. Use ONLY facts contained in the customer's answers.
-
-2. Never invent any experience, event, service, product,
-   staff action, food, drink, music detail, location detail,
-   emotion or other information that the customer did not provide.
-
-3. Do NOT include the business name.
-
-4. Do NOT mention the numeric star rating.
-
-5. Do NOT mention AI, surveys, questionnaires,
-   generated text or these instructions.
-
-6. Do NOT write a heading or title.
-
-7. Do NOT use quotation marks around the review.
-
-8. Do NOT sound like an advertisement.
-
-9. Do NOT exaggerate.
-
-10. Do NOT simply list the selected answers.
-    Turn them into a natural personal review.
-
-11. If the customer wrote a free-text comment,
-    prioritize that wording and meaning.
-
-12. Reflect the return intention naturally,
-    but do not force it if it sounds repetitive.
-
-13. Use natural sentence structure appropriate
-    for a normal customer review.
-
-14. Avoid generic filler such as:
-    "Everything was perfect"
-    "I couldn't ask for more"
-    "It exceeded all expectations"
-    unless the customer explicitly said that.
-
-15. Every sentence MUST be complete.
-
-16. Never stop in the middle of a sentence.
-
-17. Do NOT output annotations, token numbers,
-    character numbers, reference numbers,
-    phonetic guides, ruby text, metadata,
-    brackets containing numbers,
-    or any internal processing information.
-
-18. NEVER produce text such as:
-    リン(39)ク(40)
-    (41)
-    (42)
-    word(15)
-    or similar numbered fragments.
-
-19. Output ONLY the finished review.
-
-TARGET LENGTH:
-${lang.length}
-
-Now write ONE natural customer review.
+Rules:
+- Write entirely in ${lang.name}.
+- Do not include the business name.
+- Do not mention the numeric rating.
+- Do not mention AI or a survey.
+- Do not invent facts or experiences.
+- Do not simply list the selected options.
+- Make it sound like a real customer wrote it.
+- Keep the tone natural, not promotional.
+- Avoid exaggerated praise.
+- If there is a free comment, prioritize it.
+- Finish every sentence.
+- Do not output annotations.
+- Do not output reference numbers.
+- Do not put numbers in parentheses.
+- Do not insert token indexes or character indexes.
+- Do not output ruby or pronunciation guides.
+- Return only the review text inside the requested JSON field.
+- Target length: ${lang.length}.
 `.trim();
 
-    // ========================================
-    // Gemini API
-    // ========================================
-
-    const model =
-      "gemini-3.6-flash";
+    const model = "gemini-3.5-flash-lite";
 
     const url =
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-    async function callGemini(extraInstruction = "") {
-      const finalPrompt = extraInstruction
-        ? `${prompt}
+    const response = await fetch(url, {
+      method: "POST",
 
-IMPORTANT CORRECTION:
-${extraInstruction}`
-        : prompt;
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
+      },
 
-      const response = await fetch(url, {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: finalPrompt
-                }
-              ]
-            }
-          ],
-
-          generationConfig: {
-            temperature: 0.75,
-            topP: 0.9,
-            maxOutputTokens: 1000
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: prompt
+              }
+            ]
           }
-        })
-      });
+        ],
 
-      const data = await response.json();
+        generationConfig: {
+          maxOutputTokens: 500,
 
-      if (!response.ok) {
-        console.error(
-          "Gemini API error:",
-          JSON.stringify(data)
-        );
+          responseMimeType:
+            "application/json",
 
-        throw new Error(
-          data?.error?.message ||
-          `Gemini API error (${response.status})`
-        );
-      }
+          responseSchema: {
+            type: "object",
 
-      const candidate =
-        data?.candidates?.[0];
+            properties: {
+              review: {
+                type: "string",
+                description:
+                  `A complete natural customer review written only in ${lang.name}. No annotations or numbered fragments.`
+              }
+            },
 
-      const text =
-        candidate?.content?.parts
-          ?.map(part => part?.text || "")
-          .join("")
-          .trim();
+            required: [
+              "review"
+            ]
+          }
+        }
+      })
+    });
 
-      if (!text) {
-        throw new Error(
-          "No review was generated."
-        );
-      }
+    const data = await response.json();
 
-      return text;
-    }
-
-    // ========================================
-    // 1回目生成
-    // ========================================
-
-    let review =
-      await callGemini();
-
-    // ========================================
-    // 異常な出力を検出
-    // ========================================
-
-    function looksCorrupted(text) {
-      if (!text) return true;
-
-      // (39) (40) のような数字
-      const numberedFragments =
-        text.match(/[（(]\s*\d{1,4}\s*[)）]/g) || [];
-
-      if (numberedFragments.length >= 2) {
-        return true;
-      }
-
-      // 文章の途中に大量の番号がある
-      const numbers =
-        text.match(/\d+/g) || [];
-
-      if (numbers.length >= 6) {
-        return true;
-      }
-
-      // 不自然に短すぎる
-      if (text.trim().length < 15) {
-        return true;
-      }
-
-      return false;
-    }
-
-    // ========================================
-    // 壊れていたら自動再生成
-    // ========================================
-
-    if (looksCorrupted(review)) {
-      console.warn(
-        "Corrupted output detected. Regenerating:",
-        review
+    if (!response.ok) {
+      console.error(
+        "Gemini API error:",
+        JSON.stringify(data)
       );
 
-      review = await callGemini(`
-The previous generation contained corrupted numbered fragments
-such as "(39)", "(40)" or numbers inserted between characters.
-
-Generate the review again from scratch.
-
-Do NOT reproduce or repair the corrupted text.
-Do NOT output ANY numbered annotations.
-Output only normal readable ${lang.name}.
-      `.trim());
+      return res.status(response.status).json({
+        error:
+          data?.error?.message ||
+          `Gemini API error (${response.status})`
+      });
     }
 
-    // ========================================
-    // 最終クリーニング
-    // ========================================
+    const raw =
+      data?.candidates?.[0]?.content?.parts
+        ?.map(part => part?.text || "")
+        .join("")
+        .trim();
 
-    review = review
-      // Markdownなど
-      .replace(/^```[\s\S]*?\n?/, "")
-      .replace(/```$/g, "")
+    if (!raw) {
+      return res.status(500).json({
+        error: "No review was generated."
+      });
+    }
 
-      // 前後の引用符
-      .replace(/^[\s"'「『“”]+/, "")
-      .replace(/[\s"'」』“”]+$/, "")
+    let parsed;
 
-      // (39) （39）のような異常番号を削除
-      .replace(/[（(]\s*\d{1,4}\s*[)）]/g, "")
-
-      // 余分なスペース
-      .replace(/[ \t]{2,}/g, " ")
-
-      // 余分な改行
-      .replace(/\n{3,}/g, "\n\n")
-
-      .trim();
-
-    // ========================================
-    // クリーニング後も異常ならエラーにする
-    // ========================================
-
-    if (!review || looksCorrupted(review)) {
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
       console.error(
-        "Review still corrupted:",
-        review
+        "Invalid JSON from Gemini:",
+        raw
       );
 
       return res.status(500).json({
@@ -493,9 +306,42 @@ Output only normal readable ${lang.name}.
       });
     }
 
-    // ========================================
-    // 成功
-    // ========================================
+    let review =
+      String(parsed?.review || "").trim();
+
+    if (!review) {
+      return res.status(500).json({
+        error:
+          language === "ja"
+            ? "口コミ文が生成されませんでした。"
+            : "No review was generated."
+      });
+    }
+
+    // 異常な番号付き断片が混ざったら採用しない
+    const suspicious =
+      review.match(
+        /[（(]\s*\d{1,4}\s*[)）]/g
+      ) || [];
+
+    if (suspicious.length > 0) {
+      console.error(
+        "Corrupted review rejected:",
+        review
+      );
+
+      return res.status(500).json({
+        error:
+          language === "ja"
+            ? "文章生成に異常が発生しました。「作り直す」を押してください。"
+            : "The generated text was invalid. Please try again."
+      });
+    }
+
+    review = review
+      .replace(/^[「『"'“]+/, "")
+      .replace(/[」』"'”]+$/, "")
+      .trim();
 
     return res.status(200).json({
       review,
