@@ -54,6 +54,7 @@
 
     .brand img{
       width:min(340px,90%);
+      height:auto;
       border-radius:14px;
       display:block;
       margin:0 auto 14px;
@@ -147,8 +148,7 @@
     }
 
     button.primary,
-    button.secondary,
-    button.review{
+    button.secondary{
       width:100%;
       border:0;
       border-radius:14px;
@@ -165,12 +165,6 @@
     .secondary{
       background:#28282e;
       color:#fff;
-    }
-
-    button.review{
-      background:#fff;
-      color:#111;
-      margin-top:10px;
     }
 
     button:disabled{
@@ -203,56 +197,15 @@
       margin-top:10px;
     }
 
-    .overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.82);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:9999;
-    }
-
-    .overlay.hidden{
-      display:none;
-    }
-
-    .overlay-box{
-      width:min(520px,100%);
-      background:#17171b;
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:24px;
+    a.review{
+      display:block;
+      text-decoration:none;
       text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.5);
-    }
-
-    .overlay-box h2{
-      margin:0 0 14px;
-      font-size:24px;
-    }
-
-    .overlay-box p{
-      color:#ddd;
-      line-height:1.8;
-      margin:0 0 16px;
-    }
-
-    .steps{
-      text-align:left;
-      background:#101014;
-      border:1px solid var(--line);
+      background:#fff;
+      color:#111;
       border-radius:14px;
-      padding:16px;
-      line-height:1.9;
-      margin:16px 0;
-      font-size:16px;
-    }
-
-    .overlay-status{
-      color:var(--muted);
-      font-size:13px;
+      padding:15px;
+      font-weight:800;
       margin-top:10px;
     }
   </style>
@@ -273,13 +226,17 @@
   </div>
 
   <div class="brand">
-    <img src="/assets/new-planet-logo.jpeg" alt="NEW PLANET">
+
+    <!-- NP画像：リポジトリ直下の画像を使用 -->
+    <img src="/new-planet-logo.jpeg" alt="NEW PLANET">
+
     <h1>NEW PLANET</h1>
     <p id="subtitle"></p>
   </div>
 
   <div class="card">
     <div class="q" id="q1"></div>
+
     <div class="stars" id="stars">
       <button class="star" data-v="1">★</button>
       <button class="star" data-v="2">★</button>
@@ -321,7 +278,6 @@
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
-
     <div class="q" id="resultTitle"></div>
 
     <div id="result" class="result"></div>
@@ -331,35 +287,30 @@
       <button class="secondary" id="regenerateBtn"></button>
     </div>
 
-    <button
+    <a
       class="review"
-      id="reviewBtn"
-      type="button"
-    ></button>
+      id="reviewLink"
+      href="#"
+      target="_blank"
+      rel="noopener"
+    ></a>
 
     <p class="note" id="note"></p>
   </div>
 
 </div>
 
-<div id="overlay" class="overlay hidden">
-  <div class="overlay-box">
-    <h2 id="overlayTitle"></h2>
-
-    <p id="overlayLead"></p>
-
-    <div class="steps" id="overlaySteps"></div>
-
-    <div class="overlay-status" id="overlayStatus"></div>
-  </div>
-</div>
-
 <script>
 
 const CONFIG = {
   googleReviewUrl:
-    "https://search.google.com/local/writereview?placeid=ChIJq6qeN52LGGARkXG2K9Et6iM"
+    "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
 };
+
+
+// ---------------------
+// 言語判定
+// ---------------------
 
 function detectLanguage() {
 
@@ -373,29 +324,48 @@ function detectLanguage() {
     const lang =
       String(item).toLowerCase();
 
-    if (lang.startsWith("ja")) return "ja";
-    if (lang.startsWith("ko")) return "ko";
+    if (lang.startsWith("ja")) {
+      return "ja";
+    }
+
+    if (lang.startsWith("ko")) {
+      return "ko";
+    }
 
     if (
       lang.startsWith("zh-tw") ||
       lang.startsWith("zh-hk") ||
       lang.includes("hant")
-    ) return "zh-TW";
+    ) {
+      return "zh-TW";
+    }
 
-    if (lang.startsWith("zh")) return "zh-CN";
-    if (lang.startsWith("en")) return "en";
+    if (lang.startsWith("zh")) {
+      return "zh-CN";
+    }
+
+    if (lang.startsWith("en")) {
+      return "en";
+    }
   }
 
   return "en";
 }
 
+
+// 手動選択した言語があれば優先
 let language =
   localStorage.getItem("newPlanetLanguage") ||
   detectLanguage();
 
+
+// ---------------------
+// 翻訳
+// ---------------------
+
 const TEXT = {
 
-  ja:{
+  ja: {
     subtitle:
       "30秒アンケートに答えるだけ。回答内容からAIが口コミ文を作成します。",
 
@@ -429,22 +399,15 @@ const TEXT = {
     copy:"コピー",
     copied:"コピーしました",
     regenerate:"作り直す",
-
     review:"Google口コミを書く",
 
     note:
-      "ボタンを押すと口コミ文をコピーしてGoogleの投稿画面を開きます。内容がご自身の体験と一致していることを確認してから投稿してください。",
+      "内容を確認し、ご自身の体験と一致していることを確認してから投稿してください。投稿操作はお客様ご本人が行います。",
 
-    error:"エラー：",
-
-    overlayTitle:"口コミをコピーしました",
-    overlayLead:"次のGoogle画面で、以下の3ステップだけです。",
-    overlaySteps:
-      "① 星を選ぶ<br>② 口コミ欄を長押しして「貼り付け」<br>③ 「投稿」を押す",
-    overlayStatus:"Google口コミ画面を開いています…"
+    error:"エラー："
   },
 
-  en:{
+  en: {
     subtitle:
       "Answer a quick 30-second survey and AI will turn your answers into a natural review.",
 
@@ -478,22 +441,15 @@ const TEXT = {
     copy:"Copy",
     copied:"Copied",
     regenerate:"Try another",
-
     review:"Write a Google Review",
 
     note:
-      "This button copies your review and opens Google's review page. Please check that the review accurately reflects your experience before posting.",
+      "Please check that the review accurately reflects your own experience before posting. You decide whether to submit it.",
 
-    error:"Error: ",
-
-    overlayTitle:"Review copied",
-    overlayLead:"On the next Google screen, just do these 3 steps.",
-    overlaySteps:
-      "1. Choose your star rating<br>2. Paste the review into the text box<br>3. Tap Post",
-    overlayStatus:"Opening Google Reviews…"
+    error:"Error: "
   },
 
-  ko:{
+  ko: {
     subtitle:
       "30초 설문에 답하면 AI가 답변을 바탕으로 자연스러운 리뷰를 만들어 드립니다.",
 
@@ -527,22 +483,15 @@ const TEXT = {
     copy:"복사",
     copied:"복사했습니다",
     regenerate:"다시 만들기",
-
     review:"Google 리뷰 작성",
 
     note:
-      "버튼을 누르면 리뷰가 복사되고 Google 리뷰 작성 화면이 열립니다. 실제 경험과 일치하는지 확인한 후 게시해 주세요.",
+      "내용이 실제 경험과 일치하는지 확인한 후 게시해 주세요. 게시 여부는 고객 본인이 결정합니다.",
 
-    error:"오류: ",
-
-    overlayTitle:"리뷰가 복사되었습니다",
-    overlayLead:"다음 Google 화면에서 3단계만 하면 됩니다.",
-    overlaySteps:
-      "① 별점 선택<br>② 리뷰 입력란에 붙여넣기<br>③ 게시 버튼 누르기",
-    overlayStatus:"Google 리뷰 화면을 여는 중…"
+    error:"오류: "
   },
 
-  "zh-CN":{
+  "zh-CN": {
     subtitle:
       "只需回答一个30秒的小问卷，AI就会根据您的回答生成自然的评价。",
 
@@ -576,22 +525,15 @@ const TEXT = {
     copy:"复制",
     copied:"已复制",
     regenerate:"重新生成",
-
     review:"撰写Google评价",
 
     note:
-      "点击按钮后会复制评价并打开Google评价页面。发布前请确认内容与您的真实体验一致。",
+      "发布前请确认内容与您的真实体验一致。是否发布由您本人决定。",
 
-    error:"错误：",
-
-    overlayTitle:"评价已复制",
-    overlayLead:"进入Google页面后，只需3步。",
-    overlaySteps:
-      "① 选择星级<br>② 将评价粘贴到输入框<br>③ 点击发布",
-    overlayStatus:"正在打开Google评价页面…"
+    error:"错误："
   },
 
-  "zh-TW":{
+  "zh-TW": {
     subtitle:
       "只要回答30秒問卷，AI就會根據您的回答產生自然的評論。",
 
@@ -625,21 +567,19 @@ const TEXT = {
     copy:"複製",
     copied:"已複製",
     regenerate:"重新產生",
-
     review:"撰寫Google評論",
 
     note:
-      "按下按鈕後會複製評論並開啟Google評論頁面。發布前請確認內容與您的實際體驗一致。",
+      "發布前請確認內容與您的實際體驗一致。是否發布由您本人決定。",
 
-    error:"錯誤：",
-
-    overlayTitle:"評論已複製",
-    overlayLead:"進入Google頁面後，只要3個步驟。",
-    overlaySteps:
-      "① 選擇星等<br>② 將評論貼到輸入欄<br>③ 按下發布",
-    overlayStatus:"正在開啟Google評論頁面…"
+    error:"錯誤："
   }
 };
+
+
+// ---------------------
+// 表示更新
+// ---------------------
 
 function applyLanguage() {
 
@@ -682,38 +622,33 @@ function applyLanguage() {
   document.getElementById("regenerateBtn").textContent =
     t.regenerate;
 
-  document.getElementById("reviewBtn").textContent =
+  document.getElementById("reviewLink").textContent =
     t.review;
 
   document.getElementById("note").textContent =
     t.note;
 
-  document.getElementById("overlayTitle").textContent =
-    t.overlayTitle;
-
-  document.getElementById("overlayLead").textContent =
-    t.overlayLead;
-
-  document.getElementById("overlaySteps").innerHTML =
-    t.overlaySteps;
-
-  document.getElementById("overlayStatus").textContent =
-    t.overlayStatus;
 
   document
     .querySelectorAll("#goodPoints .chip")
     .forEach(btn => {
+
       btn.textContent =
         t.good[btn.dataset.key];
+
     });
+
 
   document
     .querySelectorAll("#returnIntent .chip")
     .forEach(btn => {
+
       btn.textContent =
         t.returns[btn.dataset.key];
+
     });
 }
+
 
 document.getElementById("languageSelect")
   .addEventListener("change", e => {
@@ -737,8 +672,18 @@ document.getElementById("languageSelect")
       "";
   });
 
+
+document.getElementById("reviewLink").href =
+  CONFIG.googleReviewUrl;
+
+
+// ---------------------
+// 回答
+// ---------------------
+
 let rating = 0;
 let selectedReturn = "";
+
 
 document
   .querySelectorAll("#stars .star")
@@ -752,20 +697,28 @@ document
       document
         .querySelectorAll("#stars .star")
         .forEach((b,i) => {
+
           b.classList.toggle(
             "active",
             i < rating
           );
+
         });
+
     };
+
   });
+
 
 document
   .querySelectorAll("#goodPoints .chip")
   .forEach(btn => {
+
     btn.onclick =
       () => btn.classList.toggle("active");
+
   });
+
 
 document
   .querySelectorAll("#returnIntent .chip")
@@ -779,13 +732,22 @@ document
       document
         .querySelectorAll("#returnIntent .chip")
         .forEach(b => {
+
           b.classList.toggle(
             "active",
             b === btn
           );
+
         });
+
     };
+
   });
+
+
+// ---------------------
+// AI生成
+// ---------------------
 
 async function generateReview() {
 
@@ -811,15 +773,21 @@ async function generateReview() {
       .value
       .trim();
 
+
   if (!rating) {
+
     status.textContent =
       t.selectRating;
+
     return;
   }
 
+
   btn.disabled = true;
+
   status.textContent =
     t.generating;
+
 
   try {
 
@@ -830,8 +798,7 @@ async function generateReview() {
           method:"POST",
 
           headers:{
-            "Content-Type":
-              "application/json"
+            "Content-Type":"application/json"
           },
 
           body:JSON.stringify({
@@ -844,27 +811,33 @@ async function generateReview() {
         }
       );
 
+
     const data =
       await response.json();
 
+
     if (!response.ok) {
+
       throw new Error(
         data.error ||
         "Generation failed"
       );
+
     }
 
-    document
-      .getElementById("result")
-      .textContent =
+
+    document.getElementById("result").textContent =
       data.review;
+
 
     document
       .getElementById("resultCard")
       .classList
       .remove("hidden");
 
+
     status.textContent = "";
+
 
     document
       .getElementById("resultCard")
@@ -872,6 +845,7 @@ async function generateReview() {
         behavior:"smooth",
         block:"start"
       });
+
 
   } catch(error) {
 
@@ -882,131 +856,70 @@ async function generateReview() {
   } finally {
 
     btn.disabled = false;
+
   }
+
 }
 
-document
-  .getElementById("generateBtn")
-  .onclick =
+
+document.getElementById("generateBtn").onclick =
   generateReview;
 
-document
-  .getElementById("regenerateBtn")
-  .onclick =
+document.getElementById("regenerateBtn").onclick =
   generateReview;
 
-async function copyReviewText() {
 
-  const text =
-    document
-      .getElementById("result")
-      .textContent
-      .trim();
+// ---------------------
+// コピー
+// ---------------------
 
-  if (!text) {
-    return false;
-  }
-
-  try {
-
-    await navigator
-      .clipboard
-      .writeText(text);
-
-    return true;
-
-  } catch(error) {
-
-    try {
-
-      const area =
-        document.createElement(
-          "textarea"
-        );
-
-      area.value =
-        text;
-
-      area.style.position =
-        "fixed";
-
-      area.style.opacity =
-        "0";
-
-      document.body.appendChild(
-        area
-      );
-
-      area.focus();
-      area.select();
-
-      const success =
-        document.execCommand(
-          "copy"
-        );
-
-      area.remove();
-
-      return success;
-
-    } catch {
-
-      return false;
-    }
-  }
-}
-
-document
-  .getElementById("copyBtn")
-  .onclick =
+document.getElementById("copyBtn").onclick =
   async () => {
 
     const t =
       TEXT[language] || TEXT.en;
 
-    const success =
-      await copyReviewText();
-
-    if (success) {
-
+    const text =
       document
-        .getElementById("copyBtn")
-        .textContent =
-        t.copied;
+        .getElementById("result")
+        .textContent;
 
-      setTimeout(() => {
 
-        document
-          .getElementById("copyBtn")
-          .textContent =
-          t.copy;
+    try {
 
-      },1500);
+      await navigator.clipboard.writeText(text);
+
+    } catch {
+
+      const area =
+        document.createElement("textarea");
+
+      area.value =
+        text;
+
+      document.body.appendChild(area);
+
+      area.select();
+
+      document.execCommand("copy");
+
+      area.remove();
     }
-  };
 
-document
-  .getElementById("reviewBtn")
-  .onclick =
-  async () => {
 
-    const overlay =
-      document.getElementById("overlay");
+    document.getElementById("copyBtn").textContent =
+      t.copied;
 
-    const success =
-      await copyReviewText();
-
-    overlay
-      .classList
-      .remove("hidden");
 
     setTimeout(() => {
 
-      window.location.href =
-        CONFIG.googleReviewUrl;
+      document.getElementById("copyBtn").textContent =
+        t.copy;
 
-    },1800);
+    },1500);
+
   };
+
 
 applyLanguage();
 
