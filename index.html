@@ -148,7 +148,8 @@
     }
 
     button.primary,
-    button.secondary{
+    button.secondary,
+    button.review{
       width:100%;
       border:0;
       border-radius:14px;
@@ -165,6 +166,12 @@
     .secondary{
       background:#28282e;
       color:#fff;
+    }
+
+    button.review{
+      background:#fff;
+      color:#111;
+      margin-top:10px;
     }
 
     button:disabled{
@@ -197,15 +204,56 @@
       margin-top:10px;
     }
 
-    a.review{
-      display:block;
-      text-decoration:none;
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+
+    .overlay.hidden{
+      display:none;
+    }
+
+    .overlay-box{
+      width:min(520px,100%);
+      background:#17171b;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:24px;
       text-align:center;
-      background:#fff;
-      color:#111;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+    }
+
+    .overlay-box h2{
+      margin:0 0 14px;
+      font-size:24px;
+    }
+
+    .overlay-box p{
+      color:#ddd;
+      line-height:1.8;
+      margin:0 0 16px;
+    }
+
+    .steps{
+      text-align:left;
+      background:#101014;
+      border:1px solid var(--line);
       border-radius:14px;
-      padding:15px;
-      font-weight:800;
+      padding:16px;
+      line-height:1.9;
+      margin:16px 0;
+      font-size:16px;
+    }
+
+    .overlay-status{
+      color:var(--muted);
+      font-size:13px;
       margin-top:10px;
     }
   </style>
@@ -227,8 +275,10 @@
 
   <div class="brand">
 
-    <!-- NP画像：リポジトリ直下の画像を使用 -->
-    <img src="/new-planet-logo.jpeg" alt="NEW PLANET">
+    <img
+      src="/new-planet-logo.jpeg"
+      alt="NEW PLANET"
+    >
 
     <h1>NEW PLANET</h1>
     <p id="subtitle"></p>
@@ -275,9 +325,11 @@
   </div>
 
   <button class="primary" id="generateBtn"></button>
+
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
+
     <div class="q" id="resultTitle"></div>
 
     <div id="result" class="result"></div>
@@ -287,30 +339,54 @@
       <button class="secondary" id="regenerateBtn"></button>
     </div>
 
-    <a
+    <button
       class="review"
-      id="reviewLink"
-      href="#"
-      target="_blank"
-      rel="noopener"
-    ></a>
+      id="reviewBtn"
+      type="button"
+    ></button>
 
     <p class="note" id="note"></p>
   </div>
 
 </div>
 
+
+<div id="overlay" class="overlay hidden">
+
+  <div class="overlay-box">
+
+    <h2 id="overlayTitle"></h2>
+
+    <p id="overlayLead"></p>
+
+    <div
+      class="steps"
+      id="overlaySteps"
+    ></div>
+
+    <div
+      class="overlay-status"
+      id="overlayStatus"
+    ></div>
+
+  </div>
+
+</div>
+
+
 <script>
 
 const CONFIG = {
+
   googleReviewUrl:
-    "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
+    "https://search.google.com/local/writereview?placeid=ChIJq6qeN52LGGARkXG2K9Et6iM"
+
 };
 
 
-// ---------------------
+// -------------------------
 // 言語判定
-// ---------------------
+// -------------------------
 
 function detectLanguage() {
 
@@ -319,18 +395,22 @@ function detectLanguage() {
       ? navigator.languages
       : [navigator.language || "en"];
 
+
   for (const item of languages) {
 
     const lang =
       String(item).toLowerCase();
 
+
     if (lang.startsWith("ja")) {
       return "ja";
     }
 
+
     if (lang.startsWith("ko")) {
       return "ko";
     }
+
 
     if (
       lang.startsWith("zh-tw") ||
@@ -340,39 +420,51 @@ function detectLanguage() {
       return "zh-TW";
     }
 
+
     if (lang.startsWith("zh")) {
       return "zh-CN";
     }
 
+
     if (lang.startsWith("en")) {
       return "en";
     }
+
   }
 
+
   return "en";
+
 }
 
 
-// 手動選択した言語があれば優先
 let language =
   localStorage.getItem("newPlanetLanguage") ||
   detectLanguage();
 
 
-// ---------------------
+// -------------------------
 // 翻訳
-// ---------------------
+// -------------------------
 
 const TEXT = {
 
   ja: {
+
     subtitle:
       "30秒アンケートに答えるだけ。回答内容からAIが口コミ文を作成します。",
 
-    q1:"1. 今日の満足度は？",
-    q2:"2. 良かったところを選んでください",
-    q3:"3. 特に印象に残ったことは？",
-    q4:"4. また来たいと思いますか？",
+    q1:
+      "1. 今日の満足度は？",
+
+    q2:
+      "2. 良かったところを選んでください",
+
+    q3:
+      "3. 特に印象に残ったことは？",
+
+    q4:
+      "4. また来たいと思いますか？",
 
     placeholder:
       "例：スタッフが親切だった、DJが良かった、友達と楽しめた など",
@@ -392,29 +484,67 @@ const TEXT = {
       maybe:"機会があれば"
     },
 
-    generate:"AIで口コミを作る",
-    generating:"口コミ文を作成しています…",
-    selectRating:"満足度を選んでください。",
-    resultTitle:"AIが作った口コミ",
-    copy:"コピー",
-    copied:"コピーしました",
-    regenerate:"作り直す",
-    review:"Google口コミを書く",
+    generate:
+      "AIで口コミを作る",
+
+    generating:
+      "口コミ文を作成しています…",
+
+    selectRating:
+      "満足度を選んでください。",
+
+    resultTitle:
+      "AIが作った口コミ",
+
+    copy:
+      "コピー",
+
+    copied:
+      "コピーしました",
+
+    regenerate:
+      "作り直す",
+
+    review:
+      "Google口コミを書く",
 
     note:
-      "内容を確認し、ご自身の体験と一致していることを確認してから投稿してください。投稿操作はお客様ご本人が行います。",
+      "ボタンを押すと口コミ文をコピーしてGoogleの投稿画面を開きます。内容がご自身の体験と一致していることを確認してから投稿してください。",
 
-    error:"エラー："
+    error:
+      "エラー：",
+
+    overlayTitle:
+      "口コミをコピーしました",
+
+    overlayLead:
+      "次のGoogle画面で、以下の3ステップだけです。",
+
+    overlaySteps:
+      "① 星を選ぶ<br>② 口コミ欄を長押しして「貼り付け」<br>③ 「投稿」を押す",
+
+    overlayStatus:
+      "Google口コミ画面を開いています…"
+
   },
 
+
   en: {
+
     subtitle:
       "Answer a quick 30-second survey and AI will turn your answers into a natural review.",
 
-    q1:"1. How satisfied were you today?",
-    q2:"2. What did you like?",
-    q3:"3. What stood out to you?",
-    q4:"4. Would you like to visit again?",
+    q1:
+      "1. How satisfied were you today?",
+
+    q2:
+      "2. What did you like?",
+
+    q3:
+      "3. What stood out to you?",
+
+    q4:
+      "4. Would you like to visit again?",
 
     placeholder:
       "Example: Friendly staff, great DJ, had fun with friends, etc.",
@@ -434,29 +564,67 @@ const TEXT = {
       maybe:"Maybe"
     },
 
-    generate:"Create my review with AI",
-    generating:"Creating your review…",
-    selectRating:"Please select a satisfaction rating.",
-    resultTitle:"Your AI-generated review",
-    copy:"Copy",
-    copied:"Copied",
-    regenerate:"Try another",
-    review:"Write a Google Review",
+    generate:
+      "Create my review with AI",
+
+    generating:
+      "Creating your review…",
+
+    selectRating:
+      "Please select a satisfaction rating.",
+
+    resultTitle:
+      "Your AI-generated review",
+
+    copy:
+      "Copy",
+
+    copied:
+      "Copied",
+
+    regenerate:
+      "Try another",
+
+    review:
+      "Write a Google Review",
 
     note:
-      "Please check that the review accurately reflects your own experience before posting. You decide whether to submit it.",
+      "This button copies your review and opens Google's review page. Please check that the review accurately reflects your experience before posting.",
 
-    error:"Error: "
+    error:
+      "Error: ",
+
+    overlayTitle:
+      "Review copied",
+
+    overlayLead:
+      "On the next Google screen, just do these 3 steps.",
+
+    overlaySteps:
+      "1. Choose your star rating<br>2. Paste the review into the text box<br>3. Tap Post",
+
+    overlayStatus:
+      "Opening Google Reviews…"
+
   },
 
+
   ko: {
+
     subtitle:
       "30초 설문에 답하면 AI가 답변을 바탕으로 자연스러운 리뷰를 만들어 드립니다.",
 
-    q1:"1. 오늘 만족도는 어땠나요?",
-    q2:"2. 좋았던 점을 선택해 주세요",
-    q3:"3. 가장 기억에 남은 점은 무엇인가요?",
-    q4:"4. 다시 방문하고 싶으신가요?",
+    q1:
+      "1. 오늘 만족도는 어땠나요?",
+
+    q2:
+      "2. 좋았던 점을 선택해 주세요",
+
+    q3:
+      "3. 가장 기억에 남은 점은 무엇인가요?",
+
+    q4:
+      "4. 다시 방문하고 싶으신가요?",
 
     placeholder:
       "예: 직원이 친절했다, DJ가 좋았다, 친구들과 즐거웠다 등",
@@ -476,29 +644,67 @@ const TEXT = {
       maybe:"기회가 된다면"
     },
 
-    generate:"AI로 리뷰 만들기",
-    generating:"리뷰를 작성하고 있습니다…",
-    selectRating:"만족도를 선택해 주세요.",
-    resultTitle:"AI가 만든 리뷰",
-    copy:"복사",
-    copied:"복사했습니다",
-    regenerate:"다시 만들기",
-    review:"Google 리뷰 작성",
+    generate:
+      "AI로 리뷰 만들기",
+
+    generating:
+      "리뷰를 작성하고 있습니다…",
+
+    selectRating:
+      "만족도를 선택해 주세요.",
+
+    resultTitle:
+      "AI가 만든 리뷰",
+
+    copy:
+      "복사",
+
+    copied:
+      "복사했습니다",
+
+    regenerate:
+      "다시 만들기",
+
+    review:
+      "Google 리뷰 작성",
 
     note:
-      "내용이 실제 경험과 일치하는지 확인한 후 게시해 주세요. 게시 여부는 고객 본인이 결정합니다.",
+      "버튼을 누르면 리뷰가 복사되고 Google 리뷰 작성 화면이 열립니다. 실제 경험과 일치하는지 확인한 후 게시해 주세요.",
 
-    error:"오류: "
+    error:
+      "오류: ",
+
+    overlayTitle:
+      "리뷰가 복사되었습니다",
+
+    overlayLead:
+      "다음 Google 화면에서 3단계만 하면 됩니다.",
+
+    overlaySteps:
+      "① 별점 선택<br>② 리뷰 입력란에 붙여넣기<br>③ 게시 버튼 누르기",
+
+    overlayStatus:
+      "Google 리뷰 화면을 여는 중…"
+
   },
 
+
   "zh-CN": {
+
     subtitle:
       "只需回答一个30秒的小问卷，AI就会根据您的回答生成自然的评价。",
 
-    q1:"1. 您今天的满意度如何？",
-    q2:"2. 请选择您觉得好的方面",
-    q3:"3. 有什么让您印象特别深刻？",
-    q4:"4. 您还想再来吗？",
+    q1:
+      "1. 您今天的满意度如何？",
+
+    q2:
+      "2. 请选择您觉得好的方面",
+
+    q3:
+      "3. 有什么让您印象特别深刻？",
+
+    q4:
+      "4. 您还想再来吗？",
 
     placeholder:
       "例如：员工很友善、DJ很好、和朋友玩得很开心等",
@@ -518,29 +724,67 @@ const TEXT = {
       maybe:"有机会的话"
     },
 
-    generate:"用AI生成评价",
-    generating:"正在生成评价…",
-    selectRating:"请选择满意度。",
-    resultTitle:"AI生成的评价",
-    copy:"复制",
-    copied:"已复制",
-    regenerate:"重新生成",
-    review:"撰写Google评价",
+    generate:
+      "用AI生成评价",
+
+    generating:
+      "正在生成评价…",
+
+    selectRating:
+      "请选择满意度。",
+
+    resultTitle:
+      "AI生成的评价",
+
+    copy:
+      "复制",
+
+    copied:
+      "已复制",
+
+    regenerate:
+      "重新生成",
+
+    review:
+      "撰写Google评价",
 
     note:
-      "发布前请确认内容与您的真实体验一致。是否发布由您本人决定。",
+      "点击按钮后会复制评价并打开Google评价页面。发布前请确认内容与您的真实体验一致。",
 
-    error:"错误："
+    error:
+      "错误：",
+
+    overlayTitle:
+      "评价已复制",
+
+    overlayLead:
+      "进入Google页面后，只需3步。",
+
+    overlaySteps:
+      "① 选择星级<br>② 将评价粘贴到输入框<br>③ 点击发布",
+
+    overlayStatus:
+      "正在打开Google评价页面…"
+
   },
 
+
   "zh-TW": {
+
     subtitle:
       "只要回答30秒問卷，AI就會根據您的回答產生自然的評論。",
 
-    q1:"1. 今天的滿意度如何？",
-    q2:"2. 請選擇您覺得不錯的地方",
-    q3:"3. 有什麼讓您特別印象深刻？",
-    q4:"4. 您還想再來嗎？",
+    q1:
+      "1. 今天的滿意度如何？",
+
+    q2:
+      "2. 請選擇您覺得不錯的地方",
+
+    q3:
+      "3. 有什麼讓您特別印象深刻？",
+
+    q4:
+      "4. 您還想再來嗎？",
 
     placeholder:
       "例如：工作人員很親切、DJ很好、和朋友玩得很開心等",
@@ -560,73 +804,133 @@ const TEXT = {
       maybe:"有機會的話"
     },
 
-    generate:"用AI產生評論",
-    generating:"正在產生評論…",
-    selectRating:"請選擇滿意度。",
-    resultTitle:"AI產生的評論",
-    copy:"複製",
-    copied:"已複製",
-    regenerate:"重新產生",
-    review:"撰寫Google評論",
+    generate:
+      "用AI產生評論",
+
+    generating:
+      "正在產生評論…",
+
+    selectRating:
+      "請選擇滿意度。",
+
+    resultTitle:
+      "AI產生的評論",
+
+    copy:
+      "複製",
+
+    copied:
+      "已複製",
+
+    regenerate:
+      "重新產生",
+
+    review:
+      "撰寫Google評論",
 
     note:
-      "發布前請確認內容與您的實際體驗一致。是否發布由您本人決定。",
+      "按下按鈕後會複製評論並開啟Google評論頁面。發布前請確認內容與您的實際體驗一致。",
 
-    error:"錯誤："
+    error:
+      "錯誤：",
+
+    overlayTitle:
+      "評論已複製",
+
+    overlayLead:
+      "進入Google頁面後，只要3個步驟。",
+
+    overlaySteps:
+      "① 選擇星等<br>② 將評論貼到輸入欄<br>③ 按下發布",
+
+    overlayStatus:
+      "正在開啟Google評論頁面…"
+
   }
+
 };
 
 
-// ---------------------
+// -------------------------
 // 表示更新
-// ---------------------
+// -------------------------
 
 function applyLanguage() {
 
   const t =
     TEXT[language] || TEXT.en;
 
+
   document.documentElement.lang =
     language;
+
 
   document.getElementById("languageSelect").value =
     language;
 
+
   document.getElementById("subtitle").textContent =
     t.subtitle;
+
 
   document.getElementById("q1").textContent =
     t.q1;
 
+
   document.getElementById("q2").textContent =
     t.q2;
+
 
   document.getElementById("q3").textContent =
     t.q3;
 
+
   document.getElementById("q4").textContent =
     t.q4;
+
 
   document.getElementById("comment").placeholder =
     t.placeholder;
 
+
   document.getElementById("generateBtn").textContent =
     t.generate;
+
 
   document.getElementById("resultTitle").textContent =
     t.resultTitle;
 
+
   document.getElementById("copyBtn").textContent =
     t.copy;
+
 
   document.getElementById("regenerateBtn").textContent =
     t.regenerate;
 
-  document.getElementById("reviewLink").textContent =
+
+  document.getElementById("reviewBtn").textContent =
     t.review;
+
 
   document.getElementById("note").textContent =
     t.note;
+
+
+  document.getElementById("overlayTitle").textContent =
+    t.overlayTitle;
+
+
+  document.getElementById("overlayLead").textContent =
+    t.overlayLead;
+
+
+  document.getElementById("overlaySteps").innerHTML =
+    t.overlaySteps;
+
+
+  document.getElementById("overlayStatus").textContent =
+    t.overlayStatus;
 
 
   document
@@ -647,39 +951,48 @@ function applyLanguage() {
         t.returns[btn.dataset.key];
 
     });
+
 }
 
 
-document.getElementById("languageSelect")
+// -------------------------
+// 言語変更
+// -------------------------
+
+document
+  .getElementById("languageSelect")
   .addEventListener("change", e => {
 
     language =
       e.target.value;
+
 
     localStorage.setItem(
       "newPlanetLanguage",
       language
     );
 
+
     applyLanguage();
+
 
     document
       .getElementById("resultCard")
       .classList
       .add("hidden");
 
-    document.getElementById("status").textContent =
+
+    document
+      .getElementById("status")
+      .textContent =
       "";
+
   });
 
 
-document.getElementById("reviewLink").href =
-  CONFIG.googleReviewUrl;
-
-
-// ---------------------
+// -------------------------
 // 回答
-// ---------------------
+// -------------------------
 
 let rating = 0;
 let selectedReturn = "";
@@ -693,6 +1006,7 @@ document
 
       rating =
         Number(btn.dataset.v);
+
 
       document
         .querySelectorAll("#stars .star")
@@ -714,8 +1028,13 @@ document
   .querySelectorAll("#goodPoints .chip")
   .forEach(btn => {
 
-    btn.onclick =
-      () => btn.classList.toggle("active");
+    btn.onclick = () => {
+
+      btn.classList.toggle(
+        "active"
+      );
+
+    };
 
   });
 
@@ -728,6 +1047,7 @@ document
 
       selectedReturn =
         btn.dataset.key;
+
 
       document
         .querySelectorAll("#returnIntent .chip")
@@ -745,20 +1065,23 @@ document
   });
 
 
-// ---------------------
+// -------------------------
 // AI生成
-// ---------------------
+// -------------------------
 
 async function generateReview() {
 
   const t =
     TEXT[language] || TEXT.en;
 
+
   const status =
     document.getElementById("status");
 
+
   const btn =
     document.getElementById("generateBtn");
+
 
   const goodPoints =
     [
@@ -766,6 +1089,7 @@ async function generateReview() {
         "#goodPoints .chip.active"
       )
     ].map(x => x.dataset.key);
+
 
   const comment =
     document
@@ -780,10 +1104,13 @@ async function generateReview() {
       t.selectRating;
 
     return;
+
   }
 
 
-  btn.disabled = true;
+  btn.disabled =
+    true;
+
 
   status.textContent =
     t.generating;
@@ -795,19 +1122,24 @@ async function generateReview() {
       await fetch(
         "/api/generate",
         {
+
           method:"POST",
 
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           },
 
           body:JSON.stringify({
+
             rating,
             goodPoints,
             comment,
             returnIntent:selectedReturn,
             language
+
           })
+
         }
       );
 
@@ -826,7 +1158,9 @@ async function generateReview() {
     }
 
 
-    document.getElementById("result").textContent =
+    document
+      .getElementById("result")
+      .textContent =
       data.review;
 
 
@@ -836,14 +1170,17 @@ async function generateReview() {
       .remove("hidden");
 
 
-    status.textContent = "";
+    status.textContent =
+      "";
 
 
     document
       .getElementById("resultCard")
       .scrollIntoView({
+
         behavior:"smooth",
         block:"start"
+
       });
 
 
@@ -851,72 +1188,183 @@ async function generateReview() {
 
     status.textContent =
       t.error +
-      (error.message || "Unknown error");
+      (
+        error.message ||
+        "Unknown error"
+      );
 
   } finally {
 
-    btn.disabled = false;
+    btn.disabled =
+      false;
 
   }
 
 }
 
 
-document.getElementById("generateBtn").onclick =
+document
+  .getElementById("generateBtn")
+  .onclick =
   generateReview;
 
-document.getElementById("regenerateBtn").onclick =
+
+document
+  .getElementById("regenerateBtn")
+  .onclick =
   generateReview;
 
 
-// ---------------------
-// コピー
-// ---------------------
+// -------------------------
+// コピー共通
+// -------------------------
 
-document.getElementById("copyBtn").onclick =
+async function copyReviewText() {
+
+  const text =
+    document
+      .getElementById("result")
+      .textContent
+      .trim();
+
+
+  if (!text) {
+
+    return false;
+
+  }
+
+
+  try {
+
+    await navigator
+      .clipboard
+      .writeText(text);
+
+
+    return true;
+
+
+  } catch(error) {
+
+    try {
+
+      const area =
+        document.createElement(
+          "textarea"
+        );
+
+
+      area.value =
+        text;
+
+
+      area.style.position =
+        "fixed";
+
+
+      area.style.opacity =
+        "0";
+
+
+      document.body.appendChild(
+        area
+      );
+
+
+      area.focus();
+      area.select();
+
+
+      const success =
+        document.execCommand(
+          "copy"
+        );
+
+
+      area.remove();
+
+
+      return success;
+
+
+    } catch {
+
+      return false;
+
+    }
+
+  }
+
+}
+
+
+// -------------------------
+// コピーボタン
+// -------------------------
+
+document
+  .getElementById("copyBtn")
+  .onclick =
   async () => {
 
     const t =
       TEXT[language] || TEXT.en;
 
-    const text =
+
+    const success =
+      await copyReviewText();
+
+
+    if (success) {
+
       document
-        .getElementById("result")
-        .textContent;
+        .getElementById("copyBtn")
+        .textContent =
+        t.copied;
 
 
-    try {
+      setTimeout(() => {
 
-      await navigator.clipboard.writeText(text);
+        document
+          .getElementById("copyBtn")
+          .textContent =
+          t.copy;
 
-    } catch {
+      },1500);
 
-      const area =
-        document.createElement("textarea");
-
-      area.value =
-        text;
-
-      document.body.appendChild(area);
-
-      area.select();
-
-      document.execCommand("copy");
-
-      area.remove();
     }
 
+  };
 
-    document.getElementById("copyBtn").textContent =
-      t.copied;
+
+// -------------------------
+// Google口コミ
+// -------------------------
+
+document
+  .getElementById("reviewBtn")
+  .onclick =
+  async () => {
+
+    const overlay =
+      document.getElementById("overlay");
+
+
+    await copyReviewText();
+
+
+    overlay
+      .classList
+      .remove("hidden");
 
 
     setTimeout(() => {
 
-      document.getElementById("copyBtn").textContent =
-        t.copy;
+      window.location.href =
+        CONFIG.googleReviewUrl;
 
-    },1500);
+    },1800);
 
   };
 
