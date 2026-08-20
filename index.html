@@ -15,7 +15,9 @@
       --line:#2a2a30;
     }
 
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+    }
 
     body{
       margin:0;
@@ -145,7 +147,8 @@
     }
 
     button.primary,
-    button.secondary{
+    button.secondary,
+    button.review{
       width:100%;
       border:0;
       border-radius:14px;
@@ -162,6 +165,12 @@
     .secondary{
       background:#28282e;
       color:#fff;
+    }
+
+    button.review{
+      background:#fff;
+      color:#111;
+      margin-top:10px;
     }
 
     button:disabled{
@@ -191,18 +200,6 @@
     .status{
       font-size:13px;
       color:var(--muted);
-      margin-top:10px;
-    }
-
-    a.review{
-      display:block;
-      text-decoration:none;
-      text-align:center;
-      background:#fff;
-      color:#111;
-      border-radius:14px;
-      padding:15px;
-      font-weight:800;
       margin-top:10px;
     }
   </style>
@@ -269,9 +266,11 @@
   </div>
 
   <button class="primary" id="generateBtn"></button>
+
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
+
     <div class="q" id="resultTitle"></div>
 
     <div id="result" class="result"></div>
@@ -281,15 +280,14 @@
       <button class="secondary" id="regenerateBtn"></button>
     </div>
 
-    <a
+    <button
       class="review"
-      id="reviewLink"
-      href="#"
-      target="_blank"
-      rel="noopener"
-    ></a>
+      id="reviewBtn"
+      type="button"
+    ></button>
 
     <p class="note" id="note"></p>
+
   </div>
 
 </div>
@@ -347,8 +345,7 @@ function detectLanguage() {
 }
 
 
-// 手動で選んだ言語があれば優先。
-// 初回は端末/ブラウザの優先言語を使用。
+// 手動で選んだ言語があれば優先
 let language =
   localStorage.getItem("newPlanetLanguage") ||
   detectLanguage();
@@ -360,7 +357,7 @@ let language =
 
 const TEXT = {
 
-  ja: {
+  ja:{
     subtitle:
       "30秒アンケートに答えるだけ。回答内容からAIが口コミ文を作成します。",
 
@@ -391,19 +388,25 @@ const TEXT = {
     generating:"口コミ文を作成しています…",
     selectRating:"満足度を選んでください。",
     resultTitle:"AIが作った口コミ",
+
     copy:"コピー",
     copied:"コピーしました",
+
     regenerate:"作り直す",
-    review:"Google口コミを書く",
+
+    review:"コピーしてGoogle口コミを書く",
+
+    copiedAndOpening:
+      "口コミをコピーしました。Googleの入力欄で「貼り付け」してください。",
 
     note:
-      "内容を確認し、ご自身の体験と一致していることを確認してから投稿してください。投稿操作はお客様ご本人が行います。",
+      "ボタンを押すと口コミ文をコピーしてGoogleの投稿画面を開きます。内容がご自身の体験と一致していることを確認してから投稿してください。",
 
     error:"エラー："
   },
 
 
-  en: {
+  en:{
     subtitle:
       "Answer a quick 30-second survey and AI will turn your answers into a natural review.",
 
@@ -434,19 +437,25 @@ const TEXT = {
     generating:"Creating your review…",
     selectRating:"Please select a satisfaction rating.",
     resultTitle:"Your AI-generated review",
+
     copy:"Copy",
     copied:"Copied",
+
     regenerate:"Try another",
-    review:"Write a Google Review",
+
+    review:"Copy & open Google Review",
+
+    copiedAndOpening:
+      "Review copied. Paste it into the Google review box.",
 
     note:
-      "Please check that the review accurately reflects your own experience before posting. You decide whether to submit it.",
+      "This button copies your review and opens Google's review page. Please check that the text accurately reflects your experience before posting.",
 
     error:"Error: "
   },
 
 
-  ko: {
+  ko:{
     subtitle:
       "30초 설문에 답하면 AI가 답변을 바탕으로 자연스러운 리뷰를 만들어 드립니다.",
 
@@ -477,19 +486,25 @@ const TEXT = {
     generating:"리뷰를 작성하고 있습니다…",
     selectRating:"만족도를 선택해 주세요.",
     resultTitle:"AI가 만든 리뷰",
+
     copy:"복사",
     copied:"복사했습니다",
+
     regenerate:"다시 만들기",
-    review:"Google 리뷰 작성",
+
+    review:"복사 후 Google 리뷰 작성",
+
+    copiedAndOpening:
+      "리뷰가 복사되었습니다. Google 입력란에 붙여넣어 주세요.",
 
     note:
-      "내용이 실제 경험과 일치하는지 확인한 후 게시해 주세요. 게시 여부는 고객 본인이 결정합니다.",
+      "버튼을 누르면 리뷰가 복사되고 Google 리뷰 작성 화면이 열립니다. 실제 경험과 일치하는지 확인한 후 게시해 주세요.",
 
     error:"오류: "
   },
 
 
-  "zh-CN": {
+  "zh-CN":{
     subtitle:
       "只需回答一个30秒的小问卷，AI就会根据您的回答生成自然的评价。",
 
@@ -520,19 +535,25 @@ const TEXT = {
     generating:"正在生成评价…",
     selectRating:"请选择满意度。",
     resultTitle:"AI生成的评价",
+
     copy:"复制",
     copied:"已复制",
+
     regenerate:"重新生成",
-    review:"撰写Google评价",
+
+    review:"复制并打开Google评价",
+
+    copiedAndOpening:
+      "评价已复制。请粘贴到Google评价输入框中。",
 
     note:
-      "发布前请确认内容与您的真实体验一致。是否发布由您本人决定。",
+      "点击按钮后会复制评价并打开Google评价页面。发布前请确认内容与您的真实体验一致。",
 
     error:"错误："
   },
 
 
-  "zh-TW": {
+  "zh-TW":{
     subtitle:
       "只要回答30秒問卷，AI就會根據您的回答產生自然的評論。",
 
@@ -563,16 +584,23 @@ const TEXT = {
     generating:"正在產生評論…",
     selectRating:"請選擇滿意度。",
     resultTitle:"AI產生的評論",
+
     copy:"複製",
     copied:"已複製",
+
     regenerate:"重新產生",
-    review:"撰寫Google評論",
+
+    review:"複製並開啟Google評論",
+
+    copiedAndOpening:
+      "評論已複製。請貼到Google評論輸入欄中。",
 
     note:
-      "發布前請確認內容與您的實際體驗一致。是否發布由您本人決定。",
+      "按下按鈕後會複製評論並開啟Google評論頁面。發布前請確認內容與您的實際體驗一致。",
 
     error:"錯誤："
   }
+
 };
 
 
@@ -621,7 +649,7 @@ function applyLanguage() {
   document.getElementById("regenerateBtn").textContent =
     t.regenerate;
 
-  document.getElementById("reviewLink").textContent =
+  document.getElementById("reviewBtn").textContent =
     t.review;
 
   document.getElementById("note").textContent =
@@ -670,10 +698,6 @@ document.getElementById("languageSelect")
     document.getElementById("status").textContent =
       "";
   });
-
-
-document.getElementById("reviewLink").href =
-  CONFIG.googleReviewUrl;
 
 
 // ---------------------
@@ -745,7 +769,7 @@ document
 
 
 // ---------------------
-// AI生成
+// AI口コミ生成
 // ---------------------
 
 async function generateReview() {
@@ -797,7 +821,8 @@ async function generateReview() {
           method:"POST",
 
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           },
 
           body:JSON.stringify({
@@ -825,7 +850,9 @@ async function generateReview() {
     }
 
 
-    document.getElementById("result").textContent =
+    document
+      .getElementById("result")
+      .textContent =
       data.review;
 
 
@@ -861,61 +888,161 @@ async function generateReview() {
 }
 
 
-document.getElementById("generateBtn").onclick =
+document
+  .getElementById("generateBtn")
+  .onclick =
   generateReview;
 
-document.getElementById("regenerateBtn").onclick =
+
+document
+  .getElementById("regenerateBtn")
+  .onclick =
   generateReview;
 
 
 // ---------------------
-// コピー
+// 共通コピー関数
 // ---------------------
 
-document.getElementById("copyBtn").onclick =
+async function copyReviewText() {
+
+  const text =
+    document
+      .getElementById("result")
+      .textContent
+      .trim();
+
+  if (!text) {
+    return false;
+  }
+
+
+  try {
+
+    await navigator
+      .clipboard
+      .writeText(text);
+
+    return true;
+
+  } catch(error) {
+
+    try {
+
+      const area =
+        document.createElement(
+          "textarea"
+        );
+
+      area.value =
+        text;
+
+      area.style.position =
+        "fixed";
+
+      area.style.opacity =
+        "0";
+
+      document.body.appendChild(
+        area
+      );
+
+      area.focus();
+      area.select();
+
+      const success =
+        document.execCommand(
+          "copy"
+        );
+
+      area.remove();
+
+      return success;
+
+    } catch {
+
+      return false;
+
+    }
+
+  }
+
+}
+
+
+// ---------------------
+// 通常のコピーボタン
+// ---------------------
+
+document
+  .getElementById("copyBtn")
+  .onclick =
   async () => {
 
     const t =
       TEXT[language] || TEXT.en;
 
-    const text =
+    const success =
+      await copyReviewText();
+
+
+    if (success) {
+
       document
-        .getElementById("result")
-        .textContent;
+        .getElementById("copyBtn")
+        .textContent =
+        t.copied;
 
 
-    try {
+      setTimeout(() => {
 
-      await navigator.clipboard.writeText(text);
+        document
+          .getElementById("copyBtn")
+          .textContent =
+          t.copy;
 
-    } catch {
+      },1500);
 
-      const area =
-        document.createElement("textarea");
+    }
 
-      area.value =
-        text;
+  };
 
-      document.body.appendChild(area);
 
-      area.select();
+// ---------------------
+// コピー → Google口コミ画面
+// ---------------------
 
-      document.execCommand("copy");
+document
+  .getElementById("reviewBtn")
+  .onclick =
+  async () => {
 
-      area.remove();
+    const t =
+      TEXT[language] || TEXT.en;
+
+    const status =
+      document.getElementById("status");
+
+
+    const success =
+      await copyReviewText();
+
+
+    if (success) {
+
+      status.textContent =
+        t.copiedAndOpening;
+
     }
 
 
-    document.getElementById("copyBtn").textContent =
-      t.copied;
-
-
+    // 少しだけ表示してからGoogleへ移動
     setTimeout(() => {
 
-      document.getElementById("copyBtn").textContent =
-        t.copy;
+      window.location.href =
+        CONFIG.googleReviewUrl;
 
-    },1500);
+    },350);
 
   };
 
