@@ -3,47 +3,208 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>ご来店アンケート</title>
+  <title>NEW PLANET</title>
+
   <style>
     :root{
-      --bg:#0d0d0f; --card:#17171b; --text:#f6f6f7; --muted:#a7a7b0;
-      --accent:#d9b46d; --line:#2a2a30; --danger:#ff7b7b;
+      --bg:#0d0d0f;
+      --card:#17171b;
+      --text:#f6f6f7;
+      --muted:#a7a7b0;
+      --accent:#d9b46d;
+      --line:#2a2a30;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;background:linear-gradient(180deg,#0a0a0c,#111116);color:var(--text)}
-    .wrap{max-width:620px;margin:auto;padding:24px 16px 48px}
-    .brand{text-align:center;margin:10px 0 24px}
-    .brand h1{font-size:26px;margin:0 0 8px}
-    .brand p{color:var(--muted);margin:0;line-height:1.6}
-    .card{background:rgba(23,23,27,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 12px 36px rgba(0,0,0,.22)}
-    .q{font-weight:700;margin-bottom:12px}
-    .stars{display:flex;gap:8px}
-    .star{flex:1;border:1px solid var(--line);background:#101014;color:#777;border-radius:12px;padding:12px 0;font-size:24px}
-    .star.active{border-color:var(--accent);color:#ffd875;background:#221d14}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{border:1px solid var(--line);background:#101014;color:#ddd;border-radius:999px;padding:10px 14px}
-    .chip.active{border-color:var(--accent);color:#fff;background:#2b2418}
-    textarea{width:100%;min-height:110px;border:1px solid var(--line);background:#101014;color:#fff;border-radius:14px;padding:14px;font-size:16px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    button.primary,button.secondary{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800}
-    .primary{background:var(--accent);color:#17120a}
-    .secondary{background:#28282e;color:#fff}
-    .hidden{display:none}
-    .result{white-space:pre-wrap;line-height:1.75;background:#0f0f13;border:1px solid var(--line);border-radius:14px;padding:16px}
-    .note{font-size:12px;color:var(--muted);line-height:1.6}
-    .status{font-size:13px;color:var(--muted);margin-top:10px}
-    a.review{display:block;text-decoration:none;text-align:center;background:#fff;color:#111;border-radius:14px;padding:15px;font-weight:800;margin-top:10px}
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
+      background:linear-gradient(180deg,#0a0a0c,#111116);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:620px;
+      margin:auto;
+      padding:24px 16px 48px;
+    }
+
+    .brand{
+      text-align:center;
+      margin:10px 0 24px;
+    }
+
+    .brand img{
+      width:min(340px,90%);
+      border-radius:14px;
+      display:block;
+      margin:0 auto 14px;
+      box-shadow:0 0 24px rgba(210,240,255,.18);
+    }
+
+    .brand h1{
+      font-size:26px;
+      margin:0 0 8px;
+    }
+
+    .brand p{
+      color:var(--muted);
+      margin:0;
+      line-height:1.6;
+    }
+
+    .card{
+      background:rgba(23,23,27,.96);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:20px;
+      margin:14px 0;
+      box-shadow:0 12px 36px rgba(0,0,0,.22);
+    }
+
+    .q{
+      font-weight:700;
+      margin-bottom:12px;
+      font-size:18px;
+    }
+
+    .stars{
+      display:flex;
+      gap:8px;
+    }
+
+    .star{
+      flex:1;
+      border:1px solid var(--line);
+      background:#101014;
+      color:#777;
+      border-radius:12px;
+      padding:12px 0;
+      font-size:24px;
+    }
+
+    .star.active{
+      border-color:var(--accent);
+      color:#ffd875;
+      background:#221d14;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .chip{
+      border:1px solid var(--line);
+      background:#101014;
+      color:#ddd;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:15px;
+    }
+
+    .chip.active{
+      border-color:var(--accent);
+      color:#fff;
+      background:#2b2418;
+    }
+
+    textarea{
+      width:100%;
+      min-height:110px;
+      border:1px solid var(--line);
+      background:#101014;
+      color:#fff;
+      border-radius:14px;
+      padding:14px;
+      font-size:16px;
+      resize:vertical;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    button.primary,
+    button.secondary{
+      width:100%;
+      border:0;
+      border-radius:14px;
+      padding:15px;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .primary{
+      background:var(--accent);
+      color:#17120a;
+      margin-top:4px;
+    }
+
+    .secondary{
+      background:#28282e;
+      color:#fff;
+    }
+
+    .hidden{
+      display:none;
+    }
+
+    .result{
+      white-space:pre-wrap;
+      line-height:1.75;
+      background:#0f0f13;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      font-size:16px;
+    }
+
+    .note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .status{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+
+    a.review{
+      display:block;
+      text-decoration:none;
+      text-align:center;
+      background:#fff;
+      color:#111;
+      border-radius:14px;
+      padding:15px;
+      font-weight:800;
+      margin-top:10px;
+    }
   </style>
 </head>
+
 <body>
+
 <div class="wrap">
+
   <div class="brand">
-    <img src="/assets/new-planet-logo.jpeg" alt="NEW PLANET" style="width:min(340px,90%);border-radius:14px;display:block;margin:0 auto 14px;box-shadow:0 0 24px rgba(210,240,255,.18)"><h1 id="storeName">NEW PLANET</h1>
-    <p>30秒アンケートに答えるだけ。<br>回答内容からAIが口コミ文を作成します。</p>
+    <img src="/assets/new-planet-logo.jpeg" alt="NEW PLANET">
+    <h1>NEW PLANET</h1>
+    <p id="subtitle"></p>
   </div>
 
   <div class="card">
-    <div class="q">1. 今日の満足度は？</div>
+    <div class="q" id="q1"></div>
+
     <div class="stars" id="stars">
       <button class="star" data-v="1">★</button>
       <button class="star" data-v="2">★</button>
@@ -54,126 +215,721 @@
   </div>
 
   <div class="card">
-    <div class="q">2. 良かったところを選んでください</div>
+    <div class="q" id="q2"></div>
+
     <div class="chips" id="goodPoints">
-      <button class="chip">スタッフ</button>
-      <button class="chip">雰囲気</button>
-      <button class="chip">音楽</button>
-      <button class="chip">ドリンク</button>
-      <button class="chip">居心地</button>
-      <button class="chip">アクセス</button>
+      <button class="chip" data-key="staff"></button>
+      <button class="chip" data-key="atmosphere"></button>
+      <button class="chip" data-key="music"></button>
+      <button class="chip" data-key="drinks"></button>
+      <button class="chip" data-key="comfort"></button>
+      <button class="chip" data-key="access"></button>
     </div>
   </div>
 
   <div class="card">
-    <div class="q">3. 特に印象に残ったことは？</div>
-    <textarea id="comment" placeholder="例：スタッフが親切だった、DJが良かった、友達と楽しめた など"></textarea>
+    <div class="q" id="q3"></div>
+
+    <textarea id="comment"></textarea>
   </div>
 
   <div class="card">
-    <div class="q">4. また来たいと思いますか？</div>
+    <div class="q" id="q4"></div>
+
     <div class="chips" id="returnIntent">
-      <button class="chip">ぜひ来たい</button>
-      <button class="chip">また来たい</button>
-      <button class="chip">機会があれば</button>
+      <button class="chip" data-key="definitely"></button>
+      <button class="chip" data-key="again"></button>
+      <button class="chip" data-key="maybe"></button>
     </div>
   </div>
 
-  <button class="primary" id="generateBtn">AIで口コミを作る</button>
+  <button class="primary" id="generateBtn"></button>
+
   <div class="status" id="status"></div>
 
   <div class="card hidden" id="resultCard">
-    <div class="q">AIが作った口コミ</div>
+
+    <div class="q" id="resultTitle"></div>
+
     <div id="result" class="result"></div>
+
     <div class="row" style="margin-top:12px">
-      <button class="secondary" id="copyBtn">コピー</button>
-      <button class="secondary" id="regenerateBtn">作り直す</button>
+      <button class="secondary" id="copyBtn"></button>
+      <button class="secondary" id="regenerateBtn"></button>
     </div>
-    <a class="review" id="reviewLink" href="#" target="_blank" rel="noopener">Google口コミを書く</a>
-    <p class="note">内容を確認し、ご自身の体験と一致していることを確認してから投稿してください。投稿操作はお客様ご本人が行います。</p>
+
+    <a
+      class="review"
+      id="reviewLink"
+      href="#"
+      target="_blank"
+      rel="noopener"
+    ></a>
+
+    <p class="note" id="note"></p>
+
   </div>
+
 </div>
 
 <script>
+
 const CONFIG = {
   storeName: "NEW PLANET",
-  googleReviewUrl: "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
+
+  // 後でNEW PLANETの実際のGoogle口コミURLに変更
+  googleReviewUrl:
+    "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
 };
 
-document.getElementById("storeName").textContent = CONFIG.storeName;
-document.getElementById("reviewLink").href = CONFIG.googleReviewUrl;
+
+// -------------------------
+// 言語判定
+// -------------------------
+
+function detectLanguage(){
+
+  const raw =
+    (navigator.languages && navigator.languages[0]) ||
+    navigator.language ||
+    "en";
+
+  const lang = raw.toLowerCase();
+
+  if(lang.startsWith("ja")) return "ja";
+
+  if(lang.startsWith("ko")) return "ko";
+
+  if(
+    lang === "zh-tw" ||
+    lang === "zh-hk" ||
+    lang.includes("hant")
+  ){
+    return "zh-TW";
+  }
+
+  if(lang.startsWith("zh")){
+    return "zh-CN";
+  }
+
+  return "en";
+}
+
+
+const language = detectLanguage();
+
+document.documentElement.lang = language;
+
+
+// -------------------------
+// 翻訳
+// -------------------------
+
+const TEXT = {
+
+  ja:{
+    subtitle:
+      "30秒アンケートに答えるだけ。回答内容からAIが口コミ文を作成します。",
+
+    q1:"1. 今日の満足度は？",
+
+    q2:"2. 良かったところを選んでください",
+
+    q3:"3. 特に印象に残ったことは？",
+
+    placeholder:
+      "例：スタッフが親切だった、DJが良かった、友達と楽しめた など",
+
+    q4:"4. また来たいと思いますか？",
+
+    good:{
+      staff:"スタッフ",
+      atmosphere:"雰囲気",
+      music:"音楽",
+      drinks:"ドリンク",
+      comfort:"居心地",
+      access:"アクセス"
+    },
+
+    returns:{
+      definitely:"ぜひ来たい",
+      again:"また来たい",
+      maybe:"機会があれば"
+    },
+
+    generate:"AIで口コミを作る",
+
+    generating:"口コミ文を作成しています…",
+
+    selectRating:"満足度を選んでください。",
+
+    resultTitle:"AIが作った口コミ",
+
+    copy:"コピー",
+
+    copied:"コピーしました",
+
+    regenerate:"作り直す",
+
+    review:"Google口コミを書く",
+
+    note:
+      "内容を確認し、ご自身の体験と一致していることを確認してから投稿してください。投稿操作はお客様ご本人が行います。",
+
+    error:"エラー："
+  },
+
+
+  en:{
+    subtitle:
+      "Answer a quick 30-second survey and AI will turn your answers into a natural review.",
+
+    q1:"1. How satisfied were you today?",
+
+    q2:"2. What did you like?",
+
+    q3:"3. What stood out to you?",
+
+    placeholder:
+      "Example: Friendly staff, great DJ, had fun with friends, etc.",
+
+    q4:"4. Would you like to visit again?",
+
+    good:{
+      staff:"Staff",
+      atmosphere:"Atmosphere",
+      music:"Music",
+      drinks:"Drinks",
+      comfort:"Comfort",
+      access:"Location"
+    },
+
+    returns:{
+      definitely:"Definitely",
+      again:"Yes",
+      maybe:"Maybe"
+    },
+
+    generate:"Create my review with AI",
+
+    generating:"Creating your review…",
+
+    selectRating:"Please select a satisfaction rating.",
+
+    resultTitle:"Your AI-generated review",
+
+    copy:"Copy",
+
+    copied:"Copied",
+
+    regenerate:"Try another",
+
+    review:"Write a Google Review",
+
+    note:
+      "Please check that the review accurately reflects your own experience before posting. You decide whether to submit it.",
+
+    error:"Error: "
+  },
+
+
+  ko:{
+    subtitle:
+      "30초 설문에 답하면 AI가 답변을 바탕으로 자연스러운 리뷰를 만들어 드립니다.",
+
+    q1:"1. 오늘 만족도는 어땠나요?",
+
+    q2:"2. 좋았던 점을 선택해 주세요",
+
+    q3:"3. 가장 기억에 남은 점은 무엇인가요?",
+
+    placeholder:
+      "예: 직원이 친절했다, DJ가 좋았다, 친구들과 즐거웠다 등",
+
+    q4:"4. 다시 방문하고 싶으신가요?",
+
+    good:{
+      staff:"직원",
+      atmosphere:"분위기",
+      music:"음악",
+      drinks:"음료",
+      comfort:"편안함",
+      access:"접근성"
+    },
+
+    returns:{
+      definitely:"꼭 다시 오고 싶어요",
+      again:"다시 오고 싶어요",
+      maybe:"기회가 된다면"
+    },
+
+    generate:"AI로 리뷰 만들기",
+
+    generating:"리뷰를 작성하고 있습니다…",
+
+    selectRating:"만족도를 선택해 주세요.",
+
+    resultTitle:"AI가 만든 리뷰",
+
+    copy:"복사",
+
+    copied:"복사했습니다",
+
+    regenerate:"다시 만들기",
+
+    review:"Google 리뷰 작성",
+
+    note:
+      "내용이 실제 경험과 일치하는지 확인한 후 게시해 주세요. 게시 여부는 고객 본인이 결정합니다.",
+
+    error:"오류: "
+  },
+
+
+  "zh-CN":{
+    subtitle:
+      "只需回答一个30秒的小问卷，AI就会根据您的回答生成自然的评价。",
+
+    q1:"1. 您今天的满意度如何？",
+
+    q2:"2. 请选择您觉得好的方面",
+
+    q3:"3. 有什么让您印象特别深刻？",
+
+    placeholder:
+      "例如：员工很友善、DJ很好、和朋友玩得很开心等",
+
+    q4:"4. 您还想再来吗？",
+
+    good:{
+      staff:"员工",
+      atmosphere:"氛围",
+      music:"音乐",
+      drinks:"饮品",
+      comfort:"舒适度",
+      access:"交通便利"
+    },
+
+    returns:{
+      definitely:"非常想再来",
+      again:"还想再来",
+      maybe:"有机会的话"
+    },
+
+    generate:"用AI生成评价",
+
+    generating:"正在生成评价…",
+
+    selectRating:"请选择满意度。",
+
+    resultTitle:"AI生成的评价",
+
+    copy:"复制",
+
+    copied:"已复制",
+
+    regenerate:"重新生成",
+
+    review:"撰写Google评价",
+
+    note:
+      "发布前请确认内容与您的真实体验一致。是否发布由您本人决定。",
+
+    error:"错误："
+  },
+
+
+  "zh-TW":{
+    subtitle:
+      "只要回答30秒問卷，AI就會根據您的回答產生自然的評論。",
+
+    q1:"1. 今天的滿意度如何？",
+
+    q2:"2. 請選擇您覺得不錯的地方",
+
+    q3:"3. 有什麼讓您特別印象深刻？",
+
+    placeholder:
+      "例如：工作人員很親切、DJ很好、和朋友玩得很開心等",
+
+    q4:"4. 您還想再來嗎？",
+
+    good:{
+      staff:"工作人員",
+      atmosphere:"氣氛",
+      music:"音樂",
+      drinks:"飲品",
+      comfort:"舒適度",
+      access:"交通便利"
+    },
+
+    returns:{
+      definitely:"非常想再來",
+      again:"還想再來",
+      maybe:"有機會的話"
+    },
+
+    generate:"用AI產生評論",
+
+    generating:"正在產生評論…",
+
+    selectRating:"請選擇滿意度。",
+
+    resultTitle:"AI產生的評論",
+
+    copy:"複製",
+
+    copied:"已複製",
+
+    regenerate:"重新產生",
+
+    review:"撰寫Google評論",
+
+    note:
+      "發布前請確認內容與您的實際體驗一致。是否發布由您本人決定。",
+
+    error:"錯誤："
+  }
+
+};
+
+
+const t = TEXT[language] || TEXT.en;
+
+
+// -------------------------
+// 画面に言語反映
+// -------------------------
+
+document.getElementById("subtitle").textContent =
+  t.subtitle;
+
+document.getElementById("q1").textContent =
+  t.q1;
+
+document.getElementById("q2").textContent =
+  t.q2;
+
+document.getElementById("q3").textContent =
+  t.q3;
+
+document.getElementById("q4").textContent =
+  t.q4;
+
+document.getElementById("comment").placeholder =
+  t.placeholder;
+
+document.getElementById("generateBtn").textContent =
+  t.generate;
+
+document.getElementById("resultTitle").textContent =
+  t.resultTitle;
+
+document.getElementById("copyBtn").textContent =
+  t.copy;
+
+document.getElementById("regenerateBtn").textContent =
+  t.regenerate;
+
+document.getElementById("reviewLink").textContent =
+  t.review;
+
+document.getElementById("reviewLink").href =
+  CONFIG.googleReviewUrl;
+
+document.getElementById("note").textContent =
+  t.note;
+
+
+document
+  .querySelectorAll("#goodPoints .chip")
+  .forEach(btn=>{
+
+    const key =
+      btn.dataset.key;
+
+    btn.textContent =
+      t.good[key];
+
+  });
+
+
+document
+  .querySelectorAll("#returnIntent .chip")
+  .forEach(btn=>{
+
+    const key =
+      btn.dataset.key;
+
+    btn.textContent =
+      t.returns[key];
+
+  });
+
+
+// -------------------------
+// アンケート処理
+// -------------------------
 
 let rating = 0;
+
 let selectedReturn = "";
 
-document.querySelectorAll("#stars .star").forEach(btn=>{
-  btn.onclick=()=>{
-    rating=Number(btn.dataset.v);
-    document.querySelectorAll("#stars .star").forEach((b,i)=>b.classList.toggle("active", i<rating));
-  }
-});
 
-document.querySelectorAll("#goodPoints .chip").forEach(btn=>{
-  btn.onclick=()=>btn.classList.toggle("active");
-});
+document
+  .querySelectorAll("#stars .star")
+  .forEach(btn=>{
 
-document.querySelectorAll("#returnIntent .chip").forEach(btn=>{
-  btn.onclick=()=>{
-    selectedReturn=btn.textContent;
-    document.querySelectorAll("#returnIntent .chip").forEach(b=>b.classList.toggle("active", b===btn));
-  }
-});
+    btn.onclick = ()=>{
+
+      rating =
+        Number(btn.dataset.v);
+
+      document
+        .querySelectorAll("#stars .star")
+        .forEach((b,i)=>{
+
+          b.classList.toggle(
+            "active",
+            i < rating
+          );
+
+        });
+
+    };
+
+  });
+
+
+document
+  .querySelectorAll("#goodPoints .chip")
+  .forEach(btn=>{
+
+    btn.onclick =
+      ()=>btn.classList.toggle("active");
+
+  });
+
+
+document
+  .querySelectorAll("#returnIntent .chip")
+  .forEach(btn=>{
+
+    btn.onclick = ()=>{
+
+      selectedReturn =
+        btn.dataset.key;
+
+      document
+        .querySelectorAll("#returnIntent .chip")
+        .forEach(b=>{
+
+          b.classList.toggle(
+            "active",
+            b === btn
+          );
+
+        });
+
+    };
+
+  });
+
+
+// -------------------------
+// AI口コミ生成
+// -------------------------
 
 async function generateReview(){
-  const status = document.getElementById("status");
-  const btn = document.getElementById("generateBtn");
-  const goodPoints = [...document.querySelectorAll("#goodPoints .chip.active")].map(x=>x.textContent);
-  const comment = document.getElementById("comment").value.trim();
+
+  const status =
+    document.getElementById("status");
+
+  const btn =
+    document.getElementById("generateBtn");
+
+  const goodPoints =
+    [
+      ...document.querySelectorAll(
+        "#goodPoints .chip.active"
+      )
+    ].map(x=>x.dataset.key);
+
+  const comment =
+    document
+      .getElementById("comment")
+      .value
+      .trim();
+
 
   if(!rating){
-    status.textContent = "満足度を選んでください。";
+
+    status.textContent =
+      t.selectRating;
+
     return;
   }
 
+
   btn.disabled = true;
-  status.textContent = "口コミ文を作成しています…";
+
+  status.textContent =
+    t.generating;
+
 
   try{
-    const res = await fetch("/api/generate", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        storeName: CONFIG.storeName,
-        rating,
-        goodPoints,
-        comment,
-        returnIntent: selectedReturn
-      })
-    });
 
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "生成に失敗しました");
+    const res =
+      await fetch(
+        "/api/generate",
+        {
+          method:"POST",
 
-    document.getElementById("result").textContent = data.review;
-    document.getElementById("resultCard").classList.remove("hidden");
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            rating,
+
+            goodPoints,
+
+            comment,
+
+            returnIntent:
+              selectedReturn,
+
+            language
+
+          })
+        }
+      );
+
+
+    const data =
+      await res.json();
+
+
+    if(!res.ok){
+
+      throw new Error(
+        data.error ||
+        "Generation failed"
+      );
+
+    }
+
+
+    document
+      .getElementById("result")
+      .textContent =
+      data.review;
+
+
+    document
+      .getElementById("resultCard")
+      .classList
+      .remove("hidden");
+
+
     status.textContent = "";
-    document.getElementById("resultCard").scrollIntoView({behavior:"smooth"});
+
+
+    document
+      .getElementById("resultCard")
+      .scrollIntoView({
+        behavior:"smooth"
+      });
+
+
   }catch(e){
-    status.textContent = "エラー：" + e.message;
+
+    status.textContent =
+      t.error + e.message;
+
   }finally{
-    btn.disabled=false;
+
+    btn.disabled = false;
+
   }
+
 }
 
-document.getElementById("generateBtn").onclick=generateReview;
-document.getElementById("regenerateBtn").onclick=generateReview;
 
-document.getElementById("copyBtn").onclick=async()=>{
-  const text=document.getElementById("result").textContent;
-  await navigator.clipboard.writeText(text);
-  document.getElementById("copyBtn").textContent="コピーしました";
-  setTimeout(()=>document.getElementById("copyBtn").textContent="コピー",1500);
-};
+document
+  .getElementById("generateBtn")
+  .onclick =
+  generateReview;
+
+
+document
+  .getElementById("regenerateBtn")
+  .onclick =
+  generateReview;
+
+
+// -------------------------
+// コピー
+// -------------------------
+
+document
+  .getElementById("copyBtn")
+  .onclick =
+  async()=>{
+
+    const text =
+      document
+        .getElementById("result")
+        .textContent;
+
+    try{
+
+      await navigator
+        .clipboard
+        .writeText(text);
+
+      document
+        .getElementById("copyBtn")
+        .textContent =
+        t.copied;
+
+      setTimeout(()=>{
+
+        document
+          .getElementById("copyBtn")
+          .textContent =
+          t.copy;
+
+      },1500);
+
+    }catch(e){
+
+      const area =
+        document.createElement(
+          "textarea"
+        );
+
+      area.value = text;
+
+      document.body.appendChild(
+        area
+      );
+
+      area.select();
+
+      document.execCommand(
+        "copy"
+      );
+
+      area.remove();
+
+    }
+
+  };
+
 </script>
+
 </body>
 </html>
