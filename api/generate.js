@@ -12,25 +12,18 @@ export default async function handler(req, res) {
   try {
 
     const {
-
       rating,
-
       goodPoints = [],
-
       comment = "",
-
       returnIntent = "",
-
-      language = "en"
-
+      language: requestedLanguage
     } = req.body || {};
 
 
     if (!rating) {
 
       return res.status(400).json({
-        error:
-          "Rating is required."
+        error:"Rating is required."
       });
 
     }
@@ -50,12 +43,66 @@ export default async function handler(req, res) {
     }
 
 
-    const LANGUAGES = {
+    // ---------------------
+    // 言語
+    // ---------------------
+
+    const supportedLanguages =
+      ["ja","en","ko","zh-CN","zh-TW"];
+
+
+    let language =
+      supportedLanguages.includes(requestedLanguage)
+        ? requestedLanguage
+        : null;
+
+
+    // フロントから言語が来なかった場合も
+    // ブラウザのAccept-Languageから判定
+    if (!language) {
+
+      const header =
+        String(
+          req.headers["accept-language"] ||
+          ""
+        ).toLowerCase();
+
+
+      if (header.includes("ja")) {
+
+        language = "ja";
+
+      } else if (header.includes("ko")) {
+
+        language = "ko";
+
+      } else if (
+        header.includes("zh-tw") ||
+        header.includes("zh-hk") ||
+        header.includes("hant")
+      ) {
+
+        language = "zh-TW";
+
+      } else if (header.includes("zh")) {
+
+        language = "zh-CN";
+
+      } else {
+
+        language = "en";
+
+      }
+
+    }
+
+
+    const LANG = {
 
       ja:{
         name:"Japanese",
 
-        good:{
+        points:{
           staff:"スタッフ",
           atmosphere:"雰囲気",
           music:"音楽",
@@ -68,34 +115,44 @@ export default async function handler(req, res) {
           definitely:"ぜひまた来たい",
           again:"また来たい",
           maybe:"機会があればまた来たい"
-        }
+        },
+
+        noAnswer:"未回答",
+
+        length:
+          "100〜180文字程度、2〜4文程度"
       },
 
 
       en:{
         name:"English",
 
-        good:{
+        points:{
           staff:"staff",
           atmosphere:"atmosphere",
           music:"music",
           drinks:"drinks",
           comfort:"comfort",
-          access:"location/access"
+          access:"location and accessibility"
         },
 
         returns:{
           definitely:"definitely want to visit again",
           again:"would like to visit again",
           maybe:"might visit again if I get the chance"
-        }
+        },
+
+        noAnswer:"No answer",
+
+        length:
+          "about 40 to 90 words"
       },
 
 
       ko:{
         name:"Korean",
 
-        good:{
+        points:{
           staff:"직원",
           atmosphere:"분위기",
           music:"음악",
@@ -108,14 +165,19 @@ export default async function handler(req, res) {
           definitely:"꼭 다시 방문하고 싶음",
           again:"다시 방문하고 싶음",
           maybe:"기회가 된다면 다시 방문하고 싶음"
-        }
+        },
+
+        noAnswer:"미응답",
+
+        length:
+          "약 100~180자, 자연스러운 2~4문장"
       },
 
 
       "zh-CN":{
         name:"Simplified Chinese",
 
-        good:{
+        points:{
           staff:"员工",
           atmosphere:"氛围",
           music:"音乐",
@@ -128,14 +190,19 @@ export default async function handler(req, res) {
           definitely:"非常想再次光顾",
           again:"还想再次光顾",
           maybe:"有机会的话还会再来"
-        }
+        },
+
+        noAnswer:"未回答",
+
+        length:
+          "约100至180个汉字，2至4句话"
       },
 
 
       "zh-TW":{
         name:"Traditional Chinese",
 
-        good:{
+        points:{
           staff:"工作人員",
           atmosphere:"氣氛",
           music:"音樂",
@@ -148,78 +215,85 @@ export default async function handler(req, res) {
           definitely:"非常想再次造訪",
           again:"還想再次造訪",
           maybe:"有機會的話會再來"
-        }
+        },
+
+        noAnswer:"未回答",
+
+        length:
+          "約100至180個字，2至4句話"
       }
 
     };
 
 
     const lang =
-      LANGUAGES[language] ||
-      LANGUAGES.en;
+      LANG[language];
 
 
     const selectedPoints =
       goodPoints
-        .map(
-          key =>
-            lang.good[key]
+        .map(key =>
+          lang.points[key]
         )
         .filter(Boolean);
 
 
     const returnText =
-      lang.returns[
-        returnIntent
-      ] || "";
+      lang.returns[returnIntent] ||
+      lang.noAnswer;
 
+
+    // ---------------------
+    // プロンプト
+    // ---------------------
 
     const prompt = `
-You are a writing assistant that helps a real customer turn their own survey answers into a natural Google review.
+You are helping a real customer turn their own survey answers into a natural Google review.
 
-Write the final review in ${lang.name}.
+OUTPUT LANGUAGE:
+${lang.name}
 
-IMPORTANT:
-The review must sound like it was naturally written by the customer themselves.
+The entire final review MUST be written in ${lang.name}.
 
-Never mention the business name in the review.
+Use ONLY information that the customer actually provided.
 
-Use ONLY information contained in the customer's answers below.
-
-Do not invent:
+Never invent:
 - experiences
 - services
-- people
 - products
+- staff behavior
 - events
-- feelings
-- details that the customer did not provide
+- emotions
+- details
+that are not present in the customer's answers.
 
-Do not simply list the selected survey options.
+IMPORTANT WRITING RULES:
 
-Instead, naturally connect the customer's answers into a short, human-sounding review.
+- Do NOT include the business name.
+- Do NOT mention the star rating.
+- Do NOT mention AI.
+- Do NOT mention this survey.
+- Do NOT explain what you are doing.
+- Do NOT write a title.
+- Do NOT wrap the review in quotation marks.
+- Do NOT sound like advertising.
+- Do NOT exaggerate.
+- Do NOT simply list the selected options.
+- Connect the answers naturally as one personal experience.
+- Avoid repetitive expressions.
+- Avoid generic review templates.
+- Vary sentence structure.
+- Keep the tone natural and believable.
+- The customer should sound like a normal person writing about their own experience.
+- If a free-text comment exists, give it priority.
+- Reflect the return intention naturally near the end when appropriate.
+- Finish every sentence completely.
+- Never stop in the middle of a sentence.
+- Output ONLY the finished review.
 
-STYLE RULES:
-- Natural and conversational
-- Not promotional
-- Not like advertising copy
-- Do not exaggerate
-- Avoid repetitive phrases
-- Avoid generic templates
-- Vary sentence structure
-- Do not mention the star rating
-- Do not mention this survey
-- Do not mention AI
-- Do not ask other people to leave reviews
-- Do not include a title
-- Do not use quotation marks around the result
-- Output ONLY the finished review
-- Complete every sentence fully
-- Never stop halfway through a sentence
+TARGET LENGTH:
+${lang.length}
 
-LENGTH:
-Approximately 80 to 180 characters for Japanese, Chinese or Korean.
-Approximately 40 to 100 words for English.
 
 CUSTOMER ANSWERS:
 
@@ -230,25 +304,24 @@ Positive points:
 ${
   selectedPoints.length
     ? selectedPoints.join(", ")
-    : "No answer"
+    : lang.noAnswer
 }
 
 Customer's own comment:
 ${
   comment ||
-  "No answer"
+  lang.noAnswer
 }
 
 Return intention:
-${
-  returnText ||
-  "No answer"
-}
+${returnText}
 
-Create one natural review now.
 
-Remember:
-Do not include the business name.
+Now write exactly one natural review in ${lang.name}.
+
+Again:
+Do NOT include the business name.
+Do NOT add facts that were not supplied.
 `.trim();
 
 
@@ -256,15 +329,12 @@ Do not include the business name.
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
 
 
-    async function generate(
-      maxOutputTokens = 1200
-    ) {
+    async function generate(maxOutputTokens) {
 
       const response =
         await fetch(
           url,
           {
-
             method:"POST",
 
             headers:{
@@ -275,33 +345,26 @@ Do not include the business name.
                 apiKey
             },
 
-            body:
-              JSON.stringify({
+            body:JSON.stringify({
 
-                contents:[
-                  {
-                    role:"user",
-
-                    parts:[
-                      {
-                        text:prompt
-                      }
-                    ]
-                  }
-                ],
-
-                generationConfig:{
-
-                  temperature:0.95,
-
-                  topP:0.92,
-
-                  maxOutputTokens
-
+              contents:[
+                {
+                  role:"user",
+                  parts:[
+                    {
+                      text:prompt
+                    }
+                  ]
                 }
+              ],
 
-              })
+              generationConfig:{
+                temperature:0.9,
+                topP:0.9,
+                maxOutputTokens
+              }
 
+            })
           }
         );
 
@@ -310,7 +373,12 @@ Do not include the business name.
         await response.json();
 
 
-      if(!response.ok){
+      if (!response.ok) {
+
+        console.error(
+          "Gemini API error:",
+          JSON.stringify(data)
+        );
 
         throw new Error(
           data?.error?.message ||
@@ -321,7 +389,6 @@ Do not include the business name.
 
 
       return data;
-
     }
 
 
@@ -333,10 +400,10 @@ Do not include the business name.
       data?.candidates?.[0];
 
 
-    if(
+    if (
       candidate?.finishReason ===
       "MAX_TOKENS"
-    ){
+    ) {
 
       data =
         await generate(2000);
@@ -351,18 +418,17 @@ Do not include the business name.
       candidate
         ?.content
         ?.parts
-        ?.map(
-          part =>
-            part?.text || ""
+        ?.map(part =>
+          part?.text || ""
         )
         .join("")
         .trim();
 
 
-    if(!review){
+    if (!review) {
 
       console.error(
-        "Gemini returned no review:",
+        "No review returned:",
         JSON.stringify(data)
       );
 
@@ -388,12 +454,12 @@ Do not include the business name.
 
 
     return res.status(200).json({
-      review
+      review,
+      language
     });
 
 
   } catch(error) {
-
 
     console.error(
       "generate.js error:",
@@ -402,11 +468,9 @@ Do not include the business name.
 
 
     return res.status(500).json({
-
       error:
         error?.message ||
         "Failed to generate review."
-
     });
 
   }
